@@ -7,4 +7,15 @@
         <LangVersion>9</LangVersion>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="GemBox.Spreadsheet" Version="47.0.1298" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="datasets.xlsx" />
+      <Content Include="datasets.xlsx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
 </Project>

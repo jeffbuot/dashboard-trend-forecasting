@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using GemBox.Spreadsheet;
 
 namespace ConsoleApp1
 {
-    class Case
+    public class Case
     {
         public string Month { get; set; }
         public double TotalCases { get; set; }
@@ -22,35 +26,37 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
-            var months = new string[]
-                { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-            var datasets = new List<Case>
-            {
-                new(1, "Jan", 10),
-                new(2, "Feb", 12),
-                new(3, "Mar", 7),
-                new(4, "Apr", 5),
-                new(5, "May", 9),
-                new(6, "Jun", 10),
-                new(7, "Jul", 19),
-                new(8, "Aug", 6),
-                new(9, "Sep", 4),
-                new(10, "Oct", 5),
-                new(11, "Nov", 15),
-                new(12, "Dec", 9),
-                new(13, "Jan", 11),
-                new(14, "Feb", 8),
-                new(15, "Mar", 8),
-                new(16, "Apr", 9),
-                new(17, "May", 7),
-                new(18, "Jun", 9),
-                new(19, "Jul", 9),
-                new(20, "Aug", 10),
-                new(21, "Sep", 9),
-                new(22, "Oct", 7),
-                new(23, "Nov", 7),
-                new(24, "Dec", 8),
-            };
+            var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
+            // var months = new string[]
+            //     { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+            // var datasets = new List<Case>
+            // {
+            //     new(1, "Jan", 10),
+            //     new(2, "Feb", 12),
+            //     new(3, "Mar", 7),
+            //     new(4, "Apr", 5),
+            //     new(5, "May", 9),
+            //     new(6, "Jun", 10),
+            //     new(7, "Jul", 19),
+            //     new(8, "Aug", 6),
+            //     new(9, "Sep", 4),
+            //     new(10, "Oct", 5),
+            //     new(11, "Nov", 15),
+            //     new(12, "Dec", 9),
+            //     new(13, "Jan", 11),
+            //     new(14, "Feb", 8),
+            //     new(15, "Mar", 8),
+            //     new(16, "Apr", 9),
+            //     new(17, "May", 7),
+            //     new(18, "Jun", 9),
+            //     new(19, "Jul", 9),
+            //     new(20, "Aug", 10),
+            //     new(21, "Sep", 9),
+            //     new(22, "Oct", 7),
+            //     new(23, "Nov", 7),
+            //     new(24, "Dec", 8),
+            // };
+            var datasets = DataHelper.ReadFromExcelFile("datasets.xlsx");
             var cases = datasets.Select(_ => _.TotalCases).ToArray();
             var periods = datasets.Select(_ => _.Period).ToArray();
             var intercept = MathUtil.Intercept(cases, periods);
@@ -73,7 +79,7 @@ namespace ConsoleApp1
             {
                 var ltf = (intercept + slope * dataset.Period).RoundOff(2);
                 var sft = sindex[dataset.Month] * ltf;
-                Console.WriteLine($"{ltf} | {sft.RoundOff(2)}");
+                Console.WriteLine($"{dataset.Month} | {ltf} | {sft.RoundOff(2)}");
             }
 
             Console.WriteLine("Next year forecast:");
@@ -81,10 +87,10 @@ namespace ConsoleApp1
             foreach (var month in months)
             {
                 latestPeriod++;
-                
+
                 var ltf = (intercept + slope * latestPeriod).RoundOff(2);
                 var sft = sindex[month] * ltf;
-                Console.WriteLine($"{ltf} | {sft.RoundOff(2)}");
+                Console.WriteLine($"{month} | {ltf} | {sft.RoundOff(2)}");
             }
         }
 
@@ -135,6 +141,40 @@ namespace ConsoleApp1
             double sum = 0;
             for (; n > 0; n--) sum += n * n;
             return sum;
+        }
+    }
+
+    public class DataHelper
+    {
+        public static List<Case> ReadFromExcelFile(string filePath)
+        {
+            SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
+
+            var workbook = ExcelFile.Load(filePath);
+
+            // Select the first worksheet from the file.
+            var worksheet = workbook.Worksheets[0];
+
+            // Create DataTable from an Excel worksheet.
+            var dataTable = worksheet.CreateDataTable(new CreateDataTableOptions()
+            {
+                ColumnHeaders = true,
+                StartRow = 0,
+                NumberOfColumns = 4,
+                NumberOfRows = worksheet.Rows.Count ,
+                Resolution = ColumnTypeResolution.AutoPreferStringCurrentCulture
+            });
+            var sb = new StringBuilder();
+            var datasets = new List<Case>();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                datasets.Add(new Case(Convert.ToDouble(row[0]), row[2].ToString(), Convert.ToDouble(row[3])));
+                sb.AppendFormat("{0}\t{1}\t{2}\t{3}", row[0], row[1], row[2], row[3]);
+                sb.AppendLine();
+            }
+
+            Console.WriteLine(sb.ToString());
+            return datasets;
         }
     }
 
