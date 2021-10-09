@@ -251,12 +251,12 @@ paket-files/
 .idea/
 *.sln.iml
 
-# NewsHub
-src/IPM.NewsHub.Web/Logs/*
-src/IPM.NewsHub.Web.Host/Logs/*
-src/IPM.NewsHub.IdentityServer/Logs/*
-src/IPM.NewsHub.HttpApi.Host/Logs/*
-src/IPM.NewsHub.HttpApi.HostWithIds/Logs/*
-src/IPM.NewsHub.DbMigrator/Logs/*
-src/IPM.NewsHub.Blazor/Logs/*
-src/IPM.NewsHub.Blazor.Tiered/Logs/*
+# ForecastingDashboard
+src/SMPLX.ForecastingDashboard.Web/Logs/*
+src/SMPLX.ForecastingDashboard.Web.Host/Logs/*
+src/SMPLX.ForecastingDashboard.IdentityServer/Logs/*
+src/SMPLX.ForecastingDashboard.HttpApi.Host/Logs/*
+src/SMPLX.ForecastingDashboard.HttpApi.HostWithIds/Logs/*
+src/SMPLX.ForecastingDashboard.DbMigrator/Logs/*
+src/SMPLX.ForecastingDashboard.Blazor/Logs/*
+src/SMPLX.ForecastingDashboard.Blazor.Tiered/Logs/*

@@ -12,6 +12,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="datasets_cases.xlsx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
       <None Remove="datasets.xlsx" />
       <Content Include="datasets.xlsx">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "WgxJLbPADrYWv24jj7H4VxsHCrJPRmZOAQJadVT9GRs5MjKKsQ6ku0NXmr/OGvIZK0gH54PnXqeYEjZkCdqcZw==",
+  "dgSpecHash": "5Q4L/NwqwiOi2kM2y7x21TnDvty/iUqG+ZGLRlnC0gFd3BBJ4rQ8TkC4MsZu7fVuJh+IciaLFF9L2myC69/LRQ==",
   "success": true,
-  "projectFilePath": "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jeffb\\.nuget\\packages\\gembox.spreadsheet\\47.0.1298\\gembox.spreadsheet.47.0.1298.nupkg.sha512",
+    "C:\\Users\\jeffb\\.nuget\\packages\\portable.bouncycastle\\1.8.9\\portable.bouncycastle.1.8.9.nupkg.sha512"
+  ],
   "logs": []
 }

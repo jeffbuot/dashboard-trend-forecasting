@@ -1,19 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj": {}
+    "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj": {}
   },
   "projects": {
-    "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj": {
+    "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
+        "projectUniqueName": "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
         "projectName": "ConsoleApp1",
-        "projectPath": "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
+        "projectPath": "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\ConsoleApp1.csproj",
         "packagesPath": "C:\\Users\\jeffb\\.nuget\\packages\\",
-        "outputPath": "D:\\Lab\\ConsoleApp1\\ConsoleApp1\\obj\\",
+        "outputPath": "D:\\Projects\\dashboard-trend-forecasting\\console\\ConsoleApp1\\ConsoleApp1\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
+          "D:\\Projects\\dashboard-trend-forecasting\\NuGet.Config",
           "C:\\Users\\jeffb\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -23,7 +24,8 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "http://api.nuget.org/v3/index.json": {},
-          "https://nuget.devexpress.com/cBETsfdQg9ttBNP4RFOh2lpJaGbzpUJScWCK4RcCg4xYzpBVqa/api": {}
+          "https://nuget.devexpress.com/cBETsfdQg9ttBNP4RFOh2lpJaGbzpUJScWCK4RcCg4xYzpBVqa/api": {},
+          "https://www.myget.org/F/blazorise/api/v3/index.json": {}
         },
         "frameworks": {
           "net5.0": {
@@ -40,6 +42,12 @@
       "frameworks": {
         "net5.0": {
           "targetAlias": "net5.0",
+          "dependencies": {
+            "GemBox.Spreadsheet": {
+              "target": "Package",
+              "version": "[47.0.1298, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

@@ -56,7 +56,7 @@ namespace ConsoleApp1
             //     new(23, "Nov", 7),
             //     new(24, "Dec", 8),
             // };
-            var datasets = DataHelper.ReadFromExcelFile("datasets.xlsx");
+            var datasets = DataHelper.ReadFromExcelFile("datasets_cases.xlsx");
             var cases = datasets.Select(_ => _.TotalCases).ToArray();
             var periods = datasets.Select(_ => _.Period).ToArray();
             var intercept = MathUtil.Intercept(cases, periods);

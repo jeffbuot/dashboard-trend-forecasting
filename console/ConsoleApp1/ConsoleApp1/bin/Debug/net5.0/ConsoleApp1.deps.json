@@ -7,8 +7,38 @@
   "targets": {
     ".NETCoreApp,Version=v5.0": {
       "ConsoleApp1/1.0.0": {
+        "dependencies": {
+          "GemBox.Spreadsheet": "47.0.1298"
+        },
         "runtime": {
           "ConsoleApp1.dll": {}
+        }
+      },
+      "GemBox.Spreadsheet/47.0.1298": {
+        "dependencies": {
+          "Portable.BouncyCastle": "1.8.9"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/GemBox.Spreadsheet.dll": {
+            "assemblyVersion": "47.0.0.1298",
+            "fileVersion": "47.0.310.1298"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/unix/lib/netcoreapp3.1/GemBox.Spreadsheet.dll": {
+            "rid": "unix",
+            "assetType": "runtime",
+            "assemblyVersion": "47.0.0.1298",
+            "fileVersion": "47.0.200.1298"
+          }
+        }
+      },
+      "Portable.BouncyCastle/1.8.9": {
+        "runtime": {
+          "lib/netstandard2.0/BouncyCastle.Crypto.dll": {
+            "assemblyVersion": "1.8.9.0",
+            "fileVersion": "1.8.9.1"
+          }
         }
       }
     }
@@ -18,6 +48,20 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "GemBox.Spreadsheet/47.0.1298": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9+tUgCDRy+F63RaH6vWcN5oqv+u63ggXwD9mG13enNPtWdIFZYNScX1iqMw0QFNqexYKgbX9bJ+7/PKrcsUOwg==",
+      "path": "gembox.spreadsheet/47.0.1298",
+      "hashPath": "gembox.spreadsheet.47.0.1298.nupkg.sha512"
+    },
+    "Portable.BouncyCastle/1.8.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wlJo8aFoeyl+W93iFXTK5ShzDYk5WBqoUPjTNEM0Xv9kn1H+4hmuCjF0/n8HLm9Nnp1aY6KNndWqQTNk+NGgRQ==",
+      "path": "portable.bouncycastle/1.8.9",
+      "hashPath": "portable.bouncycastle.1.8.9.nupkg.sha512"
     }
   }
 }
