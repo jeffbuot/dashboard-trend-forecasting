@@ -1,0 +1,193 @@
+﻿@page "/publicdashboard"
+@using Blazorise.Charts
+@using System.Globalization
+@using SMPLX.ForecastingDashboard.Helpers
+
+<h3>PublicDashboard</h3>
+<Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
+@*
+    <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
+<LineChart @ref="lineChart" TItem="double" />
+
+@code {
+    LineChart<double> lineChart;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await HandleRedraw();
+        }
+    }
+    async Task HandleRedraw()
+    {
+        await lineChart.Clear();
+
+        var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
+        var datasets = new List<Case>
+             {
+                 new(1, 2019,"January", 10),
+                 new(2,  2019,"February", 12),
+                 new(3, 2019, "March", 7),
+                 new(4,  2019,"April", 5),
+                 new(5,  2019,"May", 9),
+                 new(6, 2019, "June", 10),
+                 new(7, 2019, "July", 19),
+                 new(8,  2019,"August", 6),
+                 new(9,  2019,"September", 4),
+                 new(10,  2019,"October", 5),
+                 new(11, 2019, "November", 15),
+                 new(12,  2019,"December", 9),
+                 new(13, 2020, "January", 11),
+                 new(14,2020,  "February", 8),
+                 new(15,2020,  "March", 8),
+                 new(16, 2020, "April", 9),
+                 new(17, 2020, "May", 7),
+                 new(18,2020,  "June", 9),
+                 new(19,2020,  "July", 9),
+                 new(20,2020,  "August", 10),
+                 new(21, 2020, "September", 9),
+                 new(22, 2020, "October", 7),
+                 new(23, 2020, "November", 7),
+                 new(24, 2020, "December", 8),
+             };
+        var cases = datasets.Select(_ => _.TotalCases).ToArray();
+        var periods = datasets.Select(_ => _.Period).ToArray();
+        var intercept = MathUtil.Intercept(cases, periods);
+        var slope = MathUtil.Slope(cases, periods);
+        var sindex = months.ToDictionary(x => x,
+            x => datasets.Where(m => m.Month == x).Select(_ => _.TotalCases).Average() / cases.Average());
+
+        //var ltfs = datasets.Select(d => (intercept + slope * d.Period).RoundOff(2)).ToList();
+        //var stfrs = datasets.Select(d => sindex[d.Month] * ltf).ToList();
+        var stltf = datasets.Select(d =>
+        {
+            var ltf = (intercept + slope * d.Period).RoundOff(2);
+            return (ltf, sindex[d.Month] * ltf);
+        }).ToList();
+        await lineChart.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
+
+        var nextYearMonths = months.Select(_ => _ + " " + 2021).ToArray();
+        var latestPeriod = datasets.Count;
+        var ltfs = new List<double>();
+        var sfts = new List<double>();
+        foreach (var month in months)
+        {
+            latestPeriod++;
+
+            var ltf = (intercept + slope * latestPeriod).RoundOff(2);
+            ltfs.Add(ltf);
+            sfts.Add(sindex[month] * ltf);
+        }
+        await lineChart.AddLabels(nextYearMonths);
+        await lineChart.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
+        await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
+    }
+
+    LineChartDataset<double> GetAccumulatedDataset(List<double> array)
+    {
+        return new LineChartDataset<double>
+            {
+                //#0A442E seasonal forecast
+                //#288ECA accumulated
+                //#E1C6FF linear forecast
+                Label = "Accumulated Cases",
+                Data = array,
+                BackgroundColor = backgroundColors[0],//backgroundColors[new Random().Next(0, backgroundColors.Count)],// ChartColor.FromRgba(255, 99, 132, 0.2f),
+                BorderColor = borderColors[0],
+                Fill = true,
+                PointRadius = 3,
+                PointBackgroundColor = borderColors[0],
+                BorderDash = new List<int> { }
+            };
+    }
+    LineChartDataset<double> GetLinearForecastDataset(List<double> array)
+    {
+        return new LineChartDataset<double>
+            {
+                Label = "Linear Trend Forecast",
+                Data = array,
+                BackgroundColor = backgroundColors[1],//backgroundColors[new Random().Next(0, backgroundColors.Count)],// ChartColor.FromRgba(255, 99, 132, 0.2f),
+                BorderColor = borderColors[1],
+                Fill = true,
+                PointRadius = 3,
+                PointBackgroundColor = borderColors[1],
+                BorderDash = new List<int> { }
+            };
+    }
+    LineChartDataset<double> GetSeasonalForecastDataset(List<double> array)
+    {
+        return new LineChartDataset<double>
+            {
+                //#0A442E seasonal forecast
+                //#288ECA accumulated
+                //#E1C6FF linear forecast
+                Label = "Seasonal Trend Forecast",
+                Data = array,
+                BackgroundColor = backgroundColors[2],//backgroundColors[new Random().Next(0, backgroundColors.Count)],// ChartColor.FromRgba(255, 99, 132, 0.2f),
+                BorderColor = borderColors[2],
+                Fill = true,
+                PointRadius = 3,
+                PointBackgroundColor = borderColors[2],
+                BorderDash = new List<int> { }
+            };
+    }
+    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 0.2f), ChartColor.FromRgba(140, 94, 255, 0.0f), ChartColor.FromRgba(10, 68, 46, 0.0f) };
+    List<string> borderColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 1f), ChartColor.FromRgba(140, 94, 255, 1f), ChartColor.FromRgba(10, 68, 46, 1f) };
+
+    List<double> RandomizeData()
+    {
+        var r = new Random(DateTime.Now.Millisecond);
+
+        return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
+    }
+    //public class DataHelper
+    //{
+    //    public static List<Case> ReadFromExcelFile(string filePath)
+    //    {
+    //        SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
+
+    //        var workbook = ExcelFile.Load(filePath);
+
+    //        // Select the first worksheet from the file.
+    //        var worksheet = workbook.Worksheets[0];
+
+    //        // Create DataTable from an Excel worksheet.
+    //        var dataTable = worksheet.CreateDataTable(new CreateDataTableOptions()
+    //            {
+    //                ColumnHeaders = true,
+    //                StartRow = 0,
+    //                NumberOfColumns = 4,
+    //                NumberOfRows = worksheet.Rows.Count,
+    //                Resolution = ColumnTypeResolution.AutoPreferStringCurrentCulture
+    //            });
+    //        var sb = new StringBuilder();
+    //        var datasets = new List<Case>();
+    //        foreach (DataRow row in dataTable.Rows)
+    //        {
+    //            datasets.Add(new Case(Convert.ToDouble(row[0]), row[2].ToString(), Convert.ToDouble(row[3])));
+    //            sb.AppendFormat("{0}\t{1}\t{2}\t{3}", row[0], row[1], row[2], row[3]);
+    //            sb.AppendLine();
+    //        }
+
+    //        Console.WriteLine(sb.ToString());
+    //        return datasets;
+    //    }
+    //}
+    public class Case
+    {
+        public string Month { get; set; }
+        public int Year { get; set; }
+        public double TotalCases { get; set; }
+        public double Period { get; set; }
+
+        public Case(double period, int year, string month, double totalCases)
+        {
+            Month = month;
+            TotalCases = totalCases;
+            Period = period;
+            Year = year;
+        }
+    }
+
+}

@@ -94,54 +94,55 @@ namespace ConsoleApp1
             }
         }
 
-
-        static int TrendProjectionForecast(double[] casesPerPeriod, int forecastPeriod)
-        {
-            // variables are named from our formula
-            //x = periods
-            // casesPerPeriod = y
-
-            double n = Convert.ToDouble(casesPerPeriod.Length);
-            double[] xlist = Enumerable.Range(1, casesPerPeriod.Length).Select(x => Convert.ToDouble(x)).ToArray();
-            double xaverage = xlist.Sum() / n;
-            double yaverage = casesPerPeriod.Sum() / n;
-            double xsquaredsum = XSquaredSum(Convert.ToInt32(n));
-            double xysum = GetXYSum(xlist, casesPerPeriod);
-
-            double b = (xysum - (n * xaverage * yaverage)) / (xsquaredsum - (n * (xaverage * xaverage)));
-            // b = b * (new Random().Next(1, 10) % 2 == 0 ? -1 : 1);
-            double a = yaverage - (b * xaverage);
-
-            var forecastResult = a + (b * Convert.ToDouble(forecastPeriod));
-            var rounded = Math.Round(Convert.ToDecimal(forecastResult));
-            Console.WriteLine(
-                $"xaverage: {xaverage}, yaverage: {yaverage}, xsquaredsum: {xsquaredsum}, xysum: {xysum}, b: {b}, a: {a}, Y: {forecastResult}");
-            return Convert.ToInt32(rounded);
-        }
-
-        // static int LinearTrendProjection(double[] casesPerPeriod, int forecastPeriod)
-        // {
-        //     
-        // }
-
-// XY Summation
-        static double GetXYSum(double[] x, double[] y)
-        {
-            double result = 0;
-            for (int i = 0; i < x.Length; i++)
-            {
-                result += x[i] * y[i];
-            }
-
-            return result;
-        }
-
-        static double XSquaredSum(int n)
-        {
-            double sum = 0;
-            for (; n > 0; n--) sum += n * n;
-            return sum;
-        }
+        #region Old
+//         static int TrendProjectionForecast(double[] casesPerPeriod, int forecastPeriod)
+//         {
+//             // variables are named from our formula
+//             //x = periods
+//             // casesPerPeriod = y
+//
+//             double n = Convert.ToDouble(casesPerPeriod.Length);
+//             double[] xlist = Enumerable.Range(1, casesPerPeriod.Length).Select(x => Convert.ToDouble(x)).ToArray();
+//             double xaverage = xlist.Sum() / n;
+//             double yaverage = casesPerPeriod.Sum() / n;
+//             double xsquaredsum = XSquaredSum(Convert.ToInt32(n));
+//             double xysum = GetXYSum(xlist, casesPerPeriod);
+//
+//             double b = (xysum - (n * xaverage * yaverage)) / (xsquaredsum - (n * (xaverage * xaverage)));
+//             // b = b * (new Random().Next(1, 10) % 2 == 0 ? -1 : 1);
+//             double a = yaverage - (b * xaverage);
+//
+//             var forecastResult = a + (b * Convert.ToDouble(forecastPeriod));
+//             var rounded = Math.Round(Convert.ToDecimal(forecastResult));
+//             Console.WriteLine(
+//                 $"xaverage: {xaverage}, yaverage: {yaverage}, xsquaredsum: {xsquaredsum}, xysum: {xysum}, b: {b}, a: {a}, Y: {forecastResult}");
+//             return Convert.ToInt32(rounded);
+//         }
+//
+//         // static int LinearTrendProjection(double[] casesPerPeriod, int forecastPeriod)
+//         // {
+//         //     
+//         // }
+//
+// // XY Summation
+//         static double GetXYSum(double[] x, double[] y)
+//         {
+//             double result = 0;
+//             for (int i = 0; i < x.Length; i++)
+//             {
+//                 result += x[i] * y[i];
+//             }
+//
+//             return result;
+//         }
+//
+//         static double XSquaredSum(int n)
+//         {
+//             double sum = 0;
+//             for (; n > 0; n--) sum += n * n;
+//             return sum;
+//         }
+        #endregion
     }
 
     public class DataHelper
