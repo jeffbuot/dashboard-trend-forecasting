@@ -13,14 +13,15 @@ namespace SMPLX.ForecastingDashboard.MongoDB
          * public IMongoCollection<Question> Questions => Collection<Question>();
          */
         public IMongoCollection<Case> Questions => Collection<Case>();
+
         protected override void CreateModel(IMongoModelBuilder builder)
         {
             base.CreateModel(builder);
 
-            builder.Entity<Case>(b =>
-            {
-                //...
-            });
+            // builder.Entity<Case>(b =>
+            // {
+            //     //...
+            // });
         }
     }
 }

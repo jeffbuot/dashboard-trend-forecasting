@@ -1,10 +1,11 @@
 ﻿using System;
 using SMPLX.ForecastingDashboard.Common;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Domain.Entities.Auditing;
 
 namespace SMPLX.ForecastingDashboard.Cases
 {
-    public class Case : Entity<Guid>
+    public class Case : AuditedAggregateRoot<Guid>
     {
         public int CaseId { get; set; }
         public string Barangay { get; set; }
