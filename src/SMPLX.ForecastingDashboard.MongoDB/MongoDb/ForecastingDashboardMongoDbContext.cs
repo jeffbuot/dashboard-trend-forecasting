@@ -1,4 +1,7 @@
-﻿using Volo.Abp.Data;
+﻿using System.Collections.ObjectModel;
+using MongoDB.Driver;
+using SMPLX.ForecastingDashboard.Cases;
+using Volo.Abp.Data;
 using Volo.Abp.MongoDB;
 
 namespace SMPLX.ForecastingDashboard.MongoDB
@@ -9,15 +12,15 @@ namespace SMPLX.ForecastingDashboard.MongoDB
         /* Add mongo collections here. Example:
          * public IMongoCollection<Question> Questions => Collection<Question>();
          */
-
-        protected override void CreateModel(IMongoModelBuilder modelBuilder)
+        public IMongoCollection<Case> Questions => Collection<Case>();
+        protected override void CreateModel(IMongoModelBuilder builder)
         {
-            base.CreateModel(modelBuilder);
+            base.CreateModel(builder);
 
-            //builder.Entity<YourEntity>(b =>
-            //{
-            //    //...
-            //});
+            builder.Entity<Case>(b =>
+            {
+                //...
+            });
         }
     }
 }

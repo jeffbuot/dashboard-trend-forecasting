@@ -32,6 +32,16 @@ namespace SMPLX.ForecastingDashboard.Blazor.Menus
                     icon: "fas fa-home",
                     order: 0
                 )
+            ); 
+            context.Menu.Items.Insert(
+                0,
+                new ApplicationMenuItem(
+                    ForecastingDashboardMenus.Dashboard,
+                    l["Menu:Dashboard"],
+                    "/dashboard",
+                    icon: "fas fa-dashboard",
+                    order: 1
+                )
             );
             
             if (MultiTenancyConsts.IsEnabled)
@@ -45,6 +55,7 @@ namespace SMPLX.ForecastingDashboard.Blazor.Menus
 
             administration.SetSubItemOrder(IdentityMenuNames.GroupName, 2);
             administration.SetSubItemOrder(SettingManagementMenus.GroupName, 3);
+            administration.SetSubItemOrder("Data Import", 1);
 
             return Task.CompletedTask;
         }
