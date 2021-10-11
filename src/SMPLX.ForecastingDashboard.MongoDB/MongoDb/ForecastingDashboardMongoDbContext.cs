@@ -13,7 +13,7 @@ namespace SMPLX.ForecastingDashboard.MongoDB
         /* Add mongo collections here. Example:
          * public IMongoCollection<Question> Questions => Collection<Question>();
          */
-        public IMongoCollection<Case> Questions => Collection<Case>();
+        public IMongoCollection<Case> Cases => Collection<Case>();
 
         protected override void CreateModel(IMongoModelBuilder builder)
         {
