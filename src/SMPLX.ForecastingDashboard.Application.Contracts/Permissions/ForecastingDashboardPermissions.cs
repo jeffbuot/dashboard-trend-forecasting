@@ -4,7 +4,12 @@
     {
         public const string GroupName = "ForecastingDashboard";
 
-        //Add your own permission names. Example:
-        //public const string MyPermission1 = GroupName + ".MyPermission1";
+        public static class Case
+        {
+            public const string Default = GroupName + ".Case";
+            public static readonly string Create = Default + ".Create";
+            public static readonly string Edit = Default + ".Edit";
+            public static readonly string Delete = Default + ".Delete";
+        }
     }
 }

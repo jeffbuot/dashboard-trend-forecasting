@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SMPLX.ForecastingDashboard.Domain\SMPLX.ForecastingDashboard.Domain.csproj" />
+    <PackageReference Include="Volo.Abp.Dapper" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.PermissionManagement.MongoDB" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.SettingManagement.MongoDB" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.Identity.MongoDB" Version="4.4.3" />

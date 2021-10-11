@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using SMPLX.ForecastingDashboard.Cases;
 using Volo.Abp.Data;
+using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.MongoDB;
 
 namespace SMPLX.ForecastingDashboard.MongoDB

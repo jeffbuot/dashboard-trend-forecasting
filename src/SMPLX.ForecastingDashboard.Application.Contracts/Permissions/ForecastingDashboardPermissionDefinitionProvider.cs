@@ -8,9 +8,13 @@ namespace SMPLX.ForecastingDashboard.Permissions
     {
         public override void Define(IPermissionDefinitionContext context)
         {
-            var myGroup = context.AddGroup(ForecastingDashboardPermissions.GroupName);
-            //Define your own permissions here. Example:
-            //myGroup.AddPermission(ForecastingDashboardPermissions.MyPermission1, L("Permission:MyPermission1"));
+            var fdPermissionGroup = context.AddGroup(ForecastingDashboardPermissions.GroupName);
+            
+            var articlesPermission =
+                fdPermissionGroup.AddPermission(ForecastingDashboardPermissions.Case.Default, L("Permission:Article"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Create, L("Permission:Article.Create"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Delete, L("Permission:Article.Delete"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Edit, L("Permission:Article.Edit"));
         }
 
         private static LocalizableString L(string name)

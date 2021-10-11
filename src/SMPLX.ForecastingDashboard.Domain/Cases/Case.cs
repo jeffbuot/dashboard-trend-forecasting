@@ -5,7 +5,7 @@ using Volo.Abp.Domain.Entities.Auditing;
 
 namespace SMPLX.ForecastingDashboard.Cases
 {
-    public class Case : AuditedAggregateRoot<Guid>
+    public class Case : FullAuditedAggregateRoot<Guid>
     {
         public int CaseId { get; set; }
         public string Barangay { get; set; }

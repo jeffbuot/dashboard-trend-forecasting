@@ -22,7 +22,7 @@ namespace SMPLX.ForecastingDashboard.MongoDB
         typeof(AbpAuditLoggingMongoDbModule),
         typeof(AbpTenantManagementMongoDbModule),
         typeof(AbpFeatureManagementMongoDbModule)
-        )]
+    )]
     public class ForecastingDashboardMongoDbModule : AbpModule
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
