@@ -1,0 +1,79 @@
+﻿@page "/Cases/DataImport"
+@using SMPLX.ForecastingDashboard.Permissions
+@using Microsoft.Extensions.Localization
+@using SMPLX.ForecastingDashboard.Localization
+@inject IStringLocalizer<ForecastingDashboardResource> L
+
+@attribute [Authorize(ForecastingDashboardPermissions.Case.Default + ".Create")]
+
+<Card>
+    <CardHeader>
+        <div class="d-flex bd-highlight mb-3">
+            <div class="me-auto p-2 bd-highlight">
+                <h2>@L["CasesDataImport"]</h2>
+            </div>
+            <div class="p-2 bd-highlight">
+                <Button Color="Color.Primary">
+                    <i class="fas fa-file-excel"></i> @L["ImportFromExcel"]
+                </Button>
+            </div>
+            <div class="p-2 bd-highlight">
+                <Button Color="Color.Primary">
+                    <i class="fas fa-file-csv"></i> @L["ImportFromCsv"]
+                </Button>
+            </div>
+        </div>
+        <Alert Color="Color.Warning" @bind-Visible="@visible">
+            <Heading Size="HeadingSize.Is4" TextColor="TextColor.Warning">
+                <i class="fas fa-exclamation-circle"></i> @L["Important"]
+                <CloseButton/>
+            </Heading>
+            <AlertDescription>
+                @L["ImportFormatWarningMessage"]
+                <p>e.g. figure</p>
+                <Card>
+                    <CardBody>
+                        <Table Narrow="true" Bordered="true">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHeaderCell>Case Id</TableHeaderCell>
+                                    <TableHeaderCell>Date Of Registration</TableHeaderCell>
+                                    <TableHeaderCell>Age</TableHeaderCell>
+                                    <TableHeaderCell>Gender</TableHeaderCell>
+                                    <TableHeaderCell>Barangay</TableHeaderCell>
+                                    <TableHeaderCell>Status</TableHeaderCell>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow>
+                                    <TableRowHeader>1</TableRowHeader>
+                                    <TableRowCell>01 04 2021</TableRowCell>
+                                    <TableRowCell>55</TableRowCell>
+                                    <TableRowCell>M</TableRowCell>
+                                    <TableRowCell>POBLACION II</TableRowCell>
+                                    <TableRowCell>1</TableRowCell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableRowHeader>2</TableRowHeader>
+                                    <TableRowCell>12 25 2021</TableRowCell>
+                                    <TableRowCell>23</TableRowCell>
+                                    <TableRowCell>F</TableRowCell>
+                                    <TableRowCell>CAUSWAGAN</TableRowCell>
+                                    <TableRowCell>0</TableRowCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </CardBody>
+                </Card>
+            </AlertDescription>
+        </Alert>
+    </CardHeader>
+    <CardBody>
+
+    </CardBody>
+</Card>
+
+@code
+{
+    bool visible = true;
+}

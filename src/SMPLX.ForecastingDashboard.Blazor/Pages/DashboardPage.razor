@@ -106,7 +106,7 @@
         return new LineChartDataset<double>
         {
             Label = "Linear Trend Forecast",
-            Data = array,
+            Data = array.Select(a=>a<0?a*-1:a).ToList(),
             BackgroundColor = backgroundColors[1],
             BorderColor = borderColors[1],
             Fill = true,
@@ -123,7 +123,7 @@
         return new LineChartDataset<double>
         {
             Label = "Seasonal Trend Forecast",
-            Data = array,//new List<double>{0},
+            Data = array.Select(a=>a<0?a*-1:a).ToList(),//new List<double>{0},
             BackgroundColor = backgroundColors[2], //backgroundColors[new Random().Next(0, backgroundColors.Count)],// ChartColor.FromRgba(255, 99, 132, 0.2f),
             BorderColor = borderColors[2],
             Fill = true,

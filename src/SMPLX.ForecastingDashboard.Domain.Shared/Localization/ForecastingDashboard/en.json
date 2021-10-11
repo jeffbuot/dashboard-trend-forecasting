@@ -6,11 +6,15 @@
     "Menu:Cases.Query": "Query",
     "Menu:Cases.Import": "Data Import",
     "Menu:Dashboard": "Dashboard",
+    "Permission:Case.Create": "Add a case",
+    "Permission:Case.Edit": "Update a case",
+    "Permission:Case.Delete": "Delete a case",
     "Welcome": "Welcome",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
-    "Permission:Case.Create":"Add a case",
-    "Permission:Case.Edit":"Update a case",
-    "Permission:Case.Delete":"Delete a case",
-    
+    "ImportFormatWarningMessage": "Please make sure that the columns of your csv or excel file has the following format:",
+    "ImportFrom": "Import From",
+    "AddCase": "Add Case",
+    "CasesRecord": "Cases Record",
+    "CasesDataImport": "Cases Data Import"
   }
 }
