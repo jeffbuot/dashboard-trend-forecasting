@@ -4,6 +4,9 @@
     "Menu:Home": "Home",
     "Menu:Dashboard": "Dashboard",
     "Welcome": "Welcome",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io."
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
+    "Permission:Case.Create":"Add a case",
+    "Permission:Case.Edit":"Update a case",
+    "Permission:Case.Delete":"Delete a case"
   }
 }

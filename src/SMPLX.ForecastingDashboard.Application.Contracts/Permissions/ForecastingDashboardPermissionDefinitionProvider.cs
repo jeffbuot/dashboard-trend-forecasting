@@ -11,10 +11,10 @@ namespace SMPLX.ForecastingDashboard.Permissions
             var fdPermissionGroup = context.AddGroup(ForecastingDashboardPermissions.GroupName);
             
             var articlesPermission =
-                fdPermissionGroup.AddPermission(ForecastingDashboardPermissions.Case.Default, L("Permission:Article"));
-            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Create, L("Permission:Article.Create"));
-            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Delete, L("Permission:Article.Delete"));
-            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Edit, L("Permission:Article.Edit"));
+                fdPermissionGroup.AddPermission(ForecastingDashboardPermissions.Case.Default, L("Permission:Case"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Create, L("Permission:Case.Create"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Delete, L("Permission:Case.Delete"));
+            articlesPermission.AddChild(ForecastingDashboardPermissions.Case.Edit, L("Permission:Case.Edit"));
         }
 
         private static LocalizableString L(string name)
