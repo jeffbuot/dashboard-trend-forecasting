@@ -30,11 +30,11 @@
     <PackageReference Include="Volo.Abp.Swashbuckle" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="4.4.3" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Components.Server.BasicTheme" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.Account.Web.IdentityServer" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.Identity.Blazor.Server" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.TenantManagement.Blazor.Server" Version="4.4.3" />
     <PackageReference Include="Volo.Abp.SettingManagement.Blazor.Server" Version="4.4.3" />
+    <ProjectReference Include="..\Volo.Abp.AspNetCore.Components.Server.BasicTheme\Volo.Abp.AspNetCore.Components.Server.BasicTheme.csproj" />
   </ItemGroup>
 
   <ItemGroup>
