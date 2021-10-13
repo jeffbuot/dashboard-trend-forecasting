@@ -2,15 +2,43 @@
 @using Blazorise.Charts
 @using System.Globalization
 @using SMPLX.ForecastingDashboard.Helpers
-
-<h3>PublicDashboard</h3>
+@using Microsoft.Extensions.Localization
+@using SMPLX.ForecastingDashboard.Localization
+@inject IStringLocalizer<ForecastingDashboardResource> L
+<h3>@L["DataDasbhoard"]</h3>
 <Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
 @*
     <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
-<LineChart @ref="lineChart" TItem="double"/>
+<Row Gutter="(20,20)">
+    <Column ColumnSize="ColumnSize.Is6">
+        <Card Class="p-2">
+            <h5>
+                @L["LinearTrendForecast"]
+            </h5>
+            <LineChart @ref="lineChart" TItem="double"/>
+        </Card>
+    </Column>
+    <Column ColumnSize="ColumnSize.Is6">
+        <Card Class="p-2">
+            <h5>
+                @L["SeasonalTrendForecast"]
+            </h5>
+            <LineChart @ref="lineChart2" TItem="double"/>
+        </Card>
+    </Column>
+</Row>
+<Row >
+
+</Row>
+@* <Row> *@
+@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
+@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
+@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
+@* </Row> *@
 
 @code {
     LineChart<double> lineChart;
+    LineChart<double> lineChart2;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -23,6 +51,7 @@
     async Task HandleRedraw()
     {
         await lineChart.Clear();
+        await lineChart2.Clear();
 
         var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
         var datasets = new List<Case>
@@ -66,9 +95,9 @@
             var ltf = (intercept + slope * d.Period).RoundOff(2);
             return (ltf, sindex[d.Month] * ltf);
         }).ToList();
-        await lineChart.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
-
-        var nextYearMonths = months.Select(_ => _ + " " + 2021).ToArray();
+        await lineChart.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
+        await lineChart2.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
+        var nextYearMonths = months.Select(_ => _.Substring(0, 3) + " " + 2021).ToArray();
         var latestPeriod = datasets.Count;
         var ltfs = new List<double>();
         var sfts = new List<double>();
@@ -81,9 +110,11 @@
             sfts.Add(sindex[month] * ltf);
         }
         await lineChart.AddLabels(nextYearMonths);
+        await lineChart2.AddLabels(nextYearMonths);
         await lineChart.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
-        await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
-        // await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Count,sfts.ToList());
+        await lineChart2.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
+
+    // await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Count,sfts.ToList());
     // await lineChart.AddData(4,sfts.ToArray());
     }
 
@@ -106,7 +137,7 @@
         return new LineChartDataset<double>
         {
             Label = "Linear Trend Forecast",
-            Data = array.Select(a=>a<0?a*-1:a).ToList(),
+            Data = array.Select(a => a < 0 ? a * -1 : a).ToList(),
             BackgroundColor = backgroundColors[1],
             BorderColor = borderColors[1],
             Fill = true,
@@ -118,12 +149,12 @@
 
     LineChartDataset<double> GetSeasonalForecastDataset(List<double> array)
     {
-        // var x = new List<double?>(skipCount);
-        // array.ForEach(_=>x.Add(_));
+    // var x = new List<double?>(skipCount);
+    // array.ForEach(_=>x.Add(_));
         return new LineChartDataset<double>
         {
             Label = "Seasonal Trend Forecast",
-            Data = array.Select(a=>a<0?a*-1:a).ToList(),//new List<double>{0},
+            Data = array.Select(a => a < 0 ? a * -1 : a).ToList(), //new List<double>{0},
             BackgroundColor = backgroundColors[2], //backgroundColors[new Random().Next(0, backgroundColors.Count)],// ChartColor.FromRgba(255, 99, 132, 0.2f),
             BorderColor = borderColors[2],
             Fill = true,
@@ -135,6 +166,7 @@
     bool interpolationEnabled = true;
     List<string> backgroundColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 0.2f), ChartColor.FromRgba(140, 94, 255, 0.0f), ChartColor.FromRgba(75, 192, 192, 0.0f) };
     List<string> borderColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 1f), ChartColor.FromRgba(140, 94, 255, 1f), ChartColor.FromRgba(75, 192, 192, 1f) };
+    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
 
     List<double> RandomizeData()
     {
@@ -142,6 +174,7 @@
 
         return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
     }
+
 
     //public class DataHelper
     //{
