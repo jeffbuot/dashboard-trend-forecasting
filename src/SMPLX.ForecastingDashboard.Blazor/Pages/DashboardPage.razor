@@ -12,9 +12,20 @@
 <Row Gutter="(20,20)">
     <Column ColumnSize="ColumnSize.Is6">
         <Card Class="p-2">
-            <h5>
-                @L["LinearTrendForecast"]
-            </h5>
+            <Row Class="justify-content-between">
+                <Column ColumnSize="ColumnSize.IsAuto">
+                    <h5>
+                        @L["LinearTrendForecast"]
+                    </h5>
+                </Column>
+                <Column ColumnSize="ColumnSize.IsAuto">
+                    <Tooltip Text="@L["Expand"]">
+                    <Button Clicked="@(async () => await ShowLFModal())">
+                        <i class="fas fa-expand"></i>
+                    </Button>
+                    </Tooltip>
+                </Column>
+            </Row>
             <LineChart @ref="lineChart" TItem="double"/>
         </Card>
     </Column>
@@ -35,9 +46,28 @@
 @*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
 @*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
 @* </Row> *@
+<Modal @ref="LinearForecastModal" >
+    <ModalBackdrop/>
+    <ModalContent Size="ModalSize.ExtraLarge" Centered="true">
+        <ModalHeader>
+            <ModalTitle>
+                @L["LinearTrendForecast"]
+            </ModalTitle>
+            <CloseButton/>
+        </ModalHeader>
+        <ModalBody>
+            <LineChart @ref="lineChart_modal" TItem="double"/>
+        </ModalBody>
+        @* <ModalFooter> *@
+        @*     <Button Color="Color.Secondary" Clicked="@(async () => await HideLFModal())">Close</Button> *@
+        @* </ModalFooter> *@
+    </ModalContent>
+</Modal>
 
 @code {
+    Modal LinearForecastModal;
     LineChart<double> lineChart;
+    LineChart<double> lineChart_modal;
     LineChart<double> lineChart2;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -51,6 +81,7 @@
     async Task HandleRedraw()
     {
         await lineChart.Clear();
+        await lineChart_modal.Clear();
         await lineChart2.Clear();
 
         var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
@@ -95,8 +126,12 @@
             var ltf = (intercept + slope * d.Period).RoundOff(2);
             return (ltf, sindex[d.Month] * ltf);
         }).ToList();
-        await lineChart.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
-        await lineChart2.AddLabelsDatasetsAndUpdate(datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray(), GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList()));
+        var labels = datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray();
+        var accumulatedDatasets = GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList());
+        await lineChart.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
+        await lineChart_modal.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
+        await lineChart2.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
+        
         var nextYearMonths = months.Select(_ => _.Substring(0, 3) + " " + 2021).ToArray();
         var latestPeriod = datasets.Count;
         var ltfs = new List<double>();
@@ -111,7 +146,9 @@
         }
         await lineChart.AddLabels(nextYearMonths);
         await lineChart2.AddLabels(nextYearMonths);
+        await lineChart_modal.AddLabels(nextYearMonths);
         await lineChart.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
+        await lineChart_modal.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
         await lineChart2.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
 
     // await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Count,sfts.ToList());
@@ -175,6 +212,15 @@
         return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
     }
 
+    private async Task ShowLFModal()
+    {
+        LinearForecastModal.Show();
+    }
+
+    private async Task HideLFModal()
+    {
+        LinearForecastModal.Hide();
+    }
 
     //public class DataHelper
     //{
@@ -224,5 +270,8 @@
             Year = year;
         }
     }
+
+
+
 
 }
