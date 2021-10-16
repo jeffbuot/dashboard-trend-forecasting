@@ -260,3 +260,6 @@ src/SMPLX.ForecastingDashboard.HttpApi.HostWithIds/Logs/*
 src/SMPLX.ForecastingDashboard.DbMigrator/Logs/*
 src/SMPLX.ForecastingDashboard.Blazor/Logs/*
 src/SMPLX.ForecastingDashboard.Blazor.Tiered/Logs/*
+
+# Unsafe uploads
+unsafe_uploads/

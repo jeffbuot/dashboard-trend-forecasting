@@ -1,0 +1,24 @@
+﻿@page "/Test"
+@using Volo.Abp
+@using Volo.Abp.AspNetCore.Components.ExceptionHandling
+@inject IUserExceptionInformer Informer
+@inherits ForecastingDashboardComponentBase
+<h3>Test</h3>
+<Button Color="Color.Danger" Clicked="ThrowExceptionAsync">From Async</Button>
+<Button Color="Color.Danger" Clicked="ThrowException">From Non-async</Button>
+
+@code {
+
+    protected async Task ThrowExceptionAsync()
+    {
+        var ex = new UserFriendlyException("Hey there was a problem!");
+        await Informer.InformAsync(new UserExceptionInformerContext(ex));
+    }
+
+    protected void ThrowException()
+    {
+        var ex = new UserFriendlyException("Hey there was a problem!");
+        Informer.Inform(new UserExceptionInformerContext(ex));
+    }
+
+}

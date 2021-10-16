@@ -2,35 +2,62 @@
 @using SMPLX.ForecastingDashboard.Permissions
 @using Microsoft.Extensions.Localization
 @using SMPLX.ForecastingDashboard.Localization
-@inject IStringLocalizer<ForecastingDashboardResource> L
+@using System.IO
+@using System.Text
+@using Microsoft.AspNetCore.Hosting
+@using Volo.Abp
+@using System.Data
+@using System.Globalization
+@using OfficeOpenXml
+@using SMPLX.ForecastingDashboard.Cases
+@using SMPLX.ForecastingDashboard.Common
+@inject IWebHostEnvironment Environment
+@inherits ForecastingDashboardComponentBase
 
 @attribute [Authorize(ForecastingDashboardPermissions.Case.Default + ".Create")]
 
 <Card>
     <CardHeader>
-        <div class="d-flex bd-highlight mb-3">
-            <div class="me-auto p-2 bd-highlight">
+        <Row Class="justify-content-between">
+            <Column ColumnSize="ColumnSize.IsAuto">
                 <h2>@L["CasesDataImport"]</h2>
-            </div>
-            <div class="p-2 bd-highlight">
-                <Button Color="Color.Primary">
-                    <i class="fas fa-file-excel"></i> @L["ImportFromExcel"]
-                </Button>
-            </div>
-            <div class="p-2 bd-highlight">
-                <Button Color="Color.Primary">
-                    <i class="fas fa-file-csv"></i> @L["ImportFromCsv"]
-                </Button>
-            </div>
-        </div>
+            </Column>
+            @* @if (HasCreatePermission) *@
+            @* { *@
+            @*     <Column ColumnSize="ColumnSize.IsAuto"> *@
+            @*         <Column ColumnSize="ColumnSize.IsAuto" Class="p-1"> *@
+            @*             <Dropdown> *@
+            @*                 <DropdownToggle Color="Color.Primary"> *@
+            @*                     <i class="fas fa-file-upload"></i> @L["ImportFrom"] *@
+            @*                 </DropdownToggle> *@
+            @*                 <DropdownMenu> *@
+            @*                     <DropdownItem Clicked="ImportFromExcel"> *@
+            @*                         <i class="fas fa-file-excel"></i> @L["ImportFromExcel"] *@
+            @*                     </DropdownItem> *@
+            @*                     <DropdownDivider/> *@
+            @*                     <DropdownItem Clicked="ImportFromCsv"> *@
+            @*                         <i class="fas fa-file-csv"></i> @L["ImportFromCsv"] *@
+            @*                     </DropdownItem> *@
+            @*                 </DropdownMenu> *@
+            @*             </Dropdown> *@
+            @*         </Column> *@
+            @*     </Column> *@
+            @* } *@
+        </Row>
+    </CardHeader>
+    <CardBody>
         <Alert Color="Color.Warning" @bind-Visible="@visible">
             <Heading Size="HeadingSize.Is4" TextColor="TextColor.Warning">
                 <i class="fas fa-exclamation-circle"></i> @L["Important"]
                 <CloseButton/>
             </Heading>
             <AlertDescription>
+                @L["FormatNote"]
+                @L["CaseIdNote"]
+                @L["DateNote"]
+                @L["GenderNote"]
+                @L["StatusNote"]
                 @L["ImportFormatWarningMessage"]
-                <p>e.g. figure</p>
                 <Card>
                     <CardBody>
                         <Table Narrow="true" Bordered="true">
@@ -67,13 +94,186 @@
                 </Card>
             </AlertDescription>
         </Alert>
-    </CardHeader>
-    <CardBody>
-
+        <br/>
+         <Row Class="justify-content-between">
+         <Column ColumnSize="ColumnSize.IsAuto">
+        <InputFile OnChange="@LoadFiles" accept=".csv,.xlsx"/>
+         </Column>
+             <Column ColumnSize="ColumnSize.IsAuto">
+                 <Button Color="Color.Primary"><i class="fas fa-save"></i> @L["Save"]</Button>
+             </Column>
+         </Row>
+        <br/>
+        <RadzenProgressBar class="mt-2 mb-2" Visible="@isLoading" Value="100"  ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        @* <p hidden="@(!isLoading)">Uploading file..</p> *@
+        <DataGrid TItem="CaseDto"
+                  Data="@importedCases"
+                  Filterable="true"
+                  FilterMethod="DataGridFilterMethod.Contains"
+                  ShowPager="true"
+                  Striped="true"
+                  PageSize="20">
+            <DataGridColumns>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.CaseId)"
+                                Caption="@L["CaseId"]">
+                </DataGridColumn>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.DateRegistered)"
+                                Caption="@L["DateRegistered"]">
+                    <DisplayTemplate>
+                        @context.DateRegistered.ToShortDateString()
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.Age)"
+                                Caption="@L["Age"]">
+                </DataGridColumn>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.Gender)"
+                                Caption="@L["Gender"]">
+                    <DisplayTemplate>
+                        @Enum.GetName(context.Gender)
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.Barangay)"
+                                Caption="@L["Barangay"]">
+                </DataGridColumn>
+                <DataGridColumn TItem="CaseDto"
+                                Field="@nameof(CaseDto.LifeStatus)"
+                                Caption="@L["LifeStatus"]">
+                    <DisplayTemplate>
+                        @Enum.GetName(context.LifeStatus)
+                    </DisplayTemplate>
+                </DataGridColumn>
+            </DataGridColumns>
+        </DataGrid>
     </CardBody>
 </Card>
 
 @code
 {
     bool visible = true;
+    bool HasCreatePermission;
+    bool isLoading = false;
+    List<CaseDto> importedCases;
+
+    protected override async Task OnInitializedAsync()
+    {
+        importedCases = new List<CaseDto>();
+        HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
+    }
+
+    private async Task ImportFromExcel()
+    {
+    // throw new NotImplementedException();
+    }
+
+    private async Task ImportFromCsv()
+    {
+        throw new UserFriendlyException("testing friendly exception");
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            isLoading = true;
+            var trustedFileNameForFileStorage = Path.GetRandomFileName() + Path.GetExtension(e.File.Name);
+            var dir = Path.Combine(Environment.ContentRootPath, Environment.EnvironmentName, "unsafe_uploads");
+            var path = Path.Combine(dir, trustedFileNameForFileStorage);
+
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            await using (FileStream fs = File.Create(path))
+            {
+                await e.File.OpenReadStream().CopyToAsync(fs);
+            }
+
+            importedCases = await ReadExcelFile(path);
+            File.Delete(path);
+        }
+        catch (Exception ex)
+        {
+            await HandleErrorAsync(new UserFriendlyException($"File: {e.File.Name} Error: {ex.Message}"));
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task<List<CaseDto>> ReadExcelFile(string filepath)
+    {
+        var result = new List<CaseDto>();
+        var rowBeforeException = 0;
+        var caseIdBeforeException = 0;
+        try
+        {
+            using (var package = new ExcelPackage(new System.IO.FileInfo(filepath)))
+            {
+                var worksheet = package.Workbook.Worksheets[0];
+                var caseIdIndex = FindIndexByName(new[] { nameof(CaseDto.CaseId) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var dateRegIndex = FindIndexByName(new[] { nameof(CaseDto.DateRegistered), "dateofregistration" }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var ageIndex = FindIndexByName(new[] { nameof(CaseDto.Age) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var genderIndex = FindIndexByName(new[] { nameof(CaseDto.Gender) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var barangayIndex = FindIndexByName(new[] { nameof(CaseDto.Barangay) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var statusIndex = FindIndexByName(new[] { nameof(CaseDto.LifeStatus), "status" }, worksheet.Cells, worksheet.Dimension.End.Column);
+                for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
+                {
+                    rowBeforeException = i;
+                    var caseDto = new CaseDto();
+                    if (caseIdIndex >= 0 && worksheet.Cells[i, caseIdIndex].Value != null)
+                    {
+                        caseDto.CaseId = Int32.Parse(worksheet.Cells[i, caseIdIndex].Text);
+                        caseIdBeforeException = caseDto.CaseId;
+                    }
+                    if (dateRegIndex >= 0 && worksheet.Cells[i, dateRegIndex].Value != null)
+                    {
+    // caseDto.DateRegistered = DateTime.FromOADate(Int64.Parse(.Value.ToString()));
+                        var dmy = worksheet.Cells[i, dateRegIndex].Text.Split("/").Select(_ => Int32.Parse(_)).ToArray();
+                        caseDto.DateRegistered = new DateTime(dmy[2], dmy[0], dmy[1]); //DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //(Int64.Parse(worksheet.Cells[i, dateRegIndex].Value.ToString()));
+                    }
+                    if (ageIndex >= 0 && worksheet.Cells[i, ageIndex].Value != null)
+                    {
+                        caseDto.Age = Int32.Parse(worksheet.Cells[i, ageIndex].Text);
+                    }
+                    if (genderIndex >= 0 && worksheet.Cells[i, genderIndex].Value != null)
+                    {
+                        caseDto.Gender = worksheet.Cells[i, genderIndex].Text.ToLower().StartsWith("m") ? Gender.Male : Gender.Female;
+                    }
+                    if (barangayIndex >= 0 && worksheet.Cells[i, barangayIndex].Value != null)
+                    {
+                        caseDto.Barangay = worksheet.Cells[i, barangayIndex].Text;
+                    }
+                    if (statusIndex >= 0 && worksheet.Cells[i, statusIndex].Value != null)
+                    {
+                        caseDto.LifeStatus = Int32.Parse(worksheet.Cells[i, statusIndex].Text) == 1 ? LifeStatus.Alive : LifeStatus.Dead;
+                    }
+                    result.Add(caseDto);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            await HandleErrorAsync(new UserFriendlyException($"On Row: {rowBeforeException}, Case Id: {caseIdBeforeException}\nError: {e.Message}"));
+        }
+        return result;
+    }
+
+    private int FindIndexByName(string[] nsearch, ExcelRange range, int endColumn, int row = 1)
+    {
+        nsearch = nsearch.Select(_ => _.Trim().ToLower().Replace(" ", "")).ToArray();
+        for (int i = 1; i <= endColumn; i++)
+        {
+            if (nsearch.Any(_ => _ == range[row, i].Text.Trim().ToLower().Replace(" ", "")))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
 }

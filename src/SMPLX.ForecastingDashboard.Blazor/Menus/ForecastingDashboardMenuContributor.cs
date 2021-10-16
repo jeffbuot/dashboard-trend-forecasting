@@ -69,7 +69,7 @@ namespace SMPLX.ForecastingDashboard.Blazor.Menus
                     ForecastingDashboardMenus.Case.Import,
                     l["Menu:Cases.Import"],
                     "/cases/dataimport",
-                    icon: "fas fa-upload"
+                    icon: "fas fa-file-upload"
                 ));
             }
 

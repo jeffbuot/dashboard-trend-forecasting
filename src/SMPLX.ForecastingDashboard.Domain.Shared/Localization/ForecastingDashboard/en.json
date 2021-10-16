@@ -11,12 +11,21 @@
     "Permission:Case.Delete": "Delete a case",
     "Welcome": "Welcome",
     "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
-    "ImportFormatWarningMessage": "Please make sure that the columns of your csv or excel file has the following format:",
+    "ImportFormatWarningMessage": "Please make sure that the columns of your csv or excel file has the following format like the table below:",
+    "FormatNote":"To avoid exceptions please make sure that every column follows this formats:",
+    "DateNote":"Date or Date of Registration column should be formatted into Date (format: DD MM YYYY).",
+    "GenderNote":"Gender column should be formatted into M - Male, and F - Female.",
+    "CaseIdNote":"Case Id should be unique.",
+    "StatusNote":"Status column should be 1 - Alive, and 0 - Dead.",
     "ImportFrom": "Import From",
     "AddCase": "Add Case",
     "CasesRecord": "Cases Record",
     "CasesDataImport": "Cases Data Import",
     "LinearTrendForecast":"Linear Trend Forecast",
-    "SeasonalTrendForecast":"Seasonal Trend Forecast"
+    "SeasonalTrendForecast":"Seasonal Trend Forecast",
+    "Expand":"Click to expand.",
+    "AddCase":"Add Case",
+    "ImportFrom":"Import From",
+    "ReadingFile":"Reading file..."
   }
 }

@@ -10,6 +10,7 @@ namespace SMPLX.ForecastingDashboard.Cases
         public int CaseId { get; set; }
         public string Barangay { get; set; }
         public int Age { get; set; }
+        public Gender Gender { get; set; }
         public LifeStatus LifeStatus { get; set; }
         public DateTime DateRegistered { get; set; }
     }
