@@ -9,5 +9,6 @@ namespace SMPLX.ForecastingDashboard.Blazor
         {
             LocalizationResource = typeof(ForecastingDashboardResource);
         }
+        
     }
 }

@@ -4,5 +4,15 @@
     display: inline-block;
     padding: 6px 12px;
     border-radius: .25rem;
-    cursor: pointer;    
+    cursor: pointer;
+}
+
+.before-save-error {
+    color: #bd4f5e;
+    border: 1px solid #ccc;
+    box-shadow: none;
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: .25rem;
+    cursor: pointer;
 }
