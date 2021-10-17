@@ -28,6 +28,7 @@
     "ImportFrom":"Import From",
     "ReadingFile":"Reading file...",
     "CaseIdDuplicateTable":"This case id already exist in the current table context.",
-    "CaseIdDuplicateDatabase":"This case id already exist in the database."
+    "CaseIdDuplicateDatabase":"This case id already exist in the database.",
+    "DataImportSuccess":"Data successfully saved."
   }
 }

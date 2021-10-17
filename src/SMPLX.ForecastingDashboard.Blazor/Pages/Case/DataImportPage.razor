@@ -119,8 +119,14 @@
         </div>
     </div>
     <div class="p-2">
-        <Button Color="Color.Primary" Clicked="@SaveImport">
-            <i class="fas fa-save"></i> @L["Save"]
+        <Button Color="Color.Primary" Clicked="@SaveImport" Disabled="@isSaving">
+            @if(isSaving){
+                <SpinKit Type="SpinKitType.Chase" Size="20px" Color="#ffffff"/>
+            }
+            else
+            {
+                <i class="fas fa-save" ></i>@(" ")@L["Save"]
+            }
         </Button>
     </div>
 </div>
@@ -219,6 +225,7 @@
     bool HasCreatePermission;
     bool isLoading;
     bool isEditingNewCase;
+    bool isSaving;
 
     RadzenDataGrid<CaseImportDto> casesGrid;
     List<CaseImportDto> importedCases;
@@ -349,6 +356,8 @@
 
     private async Task SaveImport()
     {
+        isSaving = true;
+        if (importedCases.Count < 1) return;
         beforeSaveIssues = await ValidateImportCasesAsync();
         if (!string.IsNullOrEmpty(beforeSaveIssues))
         {
@@ -357,7 +366,20 @@
         else
         {
     //Save
+            try
+            {
+                var inputList = importedCases.Select(c => ObjectMapper.Map<CaseDto, CaseInputDto>(c));
+                await CaseAppService.CreateManyAsync(inputList);
+                Message.Success(L["DataImportSuccess"]);
+                importedCases.Clear();
+            }
+            catch (Exception e)
+            {
+                isSaving = false;
+                await HandleErrorAsync(e);
+            }
         }
+        isSaving = false;
     }
 
     private async Task<string> ValidateImportCasesAsync()
