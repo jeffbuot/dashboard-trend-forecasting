@@ -26,6 +26,8 @@
     "Expand":"Click to expand.",
     "AddCase":"Add Case",
     "ImportFrom":"Import From",
-    "ReadingFile":"Reading file..."
+    "ReadingFile":"Reading file...",
+    "CaseIdDuplicateTable":"This case id already exist in the current table context.",
+    "CaseIdDuplicateDatabase":"This case id already exist in the database."
   }
 }

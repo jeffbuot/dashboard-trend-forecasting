@@ -8,11 +8,11 @@ namespace SMPLX.ForecastingDashboard.Cases
     public class CaseDto : FullAuditedEntityDto<Guid>
     {
         public int CaseId { get; set; }
-        public string Barangay { get; set; }
+        public DateTime DateRegistered { get; set; }
         public int Age { get; set; }
         public Gender Gender { get; set; }
+        public string Barangay { get; set; }
         public LifeStatus LifeStatus { get; set; }
-        public DateTime DateRegistered { get; set; }
     }
 
     public class CaseGetListDto : ListResultDto<CaseDto>
@@ -26,5 +26,10 @@ namespace SMPLX.ForecastingDashboard.Cases
         public int Age { get; set; }
         public LifeStatus LifeStatus { get; set; }
         [Required] public DateTime DateRegistered { get; set; }
+    }
+
+    public class CaseImportDto : CaseDto
+    {
+        public string ErrorMessage { get; set; }
     }
 }

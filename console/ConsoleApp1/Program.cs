@@ -26,6 +26,14 @@ namespace ConsoleApp1
     {
         static void Main(string[] args)
         {
+            var list = new List<Case> { new Case(1,"",1), new Case(1,"",1), new Case(1,"",1)};
+            foreach (var l in list)
+            {
+                l.Period = 2;
+
+            }
+
+            Console.WriteLine(list);
             var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
             // var months = new string[]
             //     { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };

@@ -8,171 +8,263 @@
 @using Volo.Abp
 @using System.Data
 @using System.Globalization
+@using Microsoft.AspNetCore.Components
 @using OfficeOpenXml
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.Common
+@using Volo.Abp.Guids
 @inject IWebHostEnvironment Environment
+@inject IGuidGenerator GuidGenerator
+@inject ICaseAppService CaseAppService
 @inherits ForecastingDashboardComponentBase
 
 @attribute [Authorize(ForecastingDashboardPermissions.Case.Default + ".Create")]
 
 <Card>
-    <CardHeader>
-        <Row Class="justify-content-between">
-            <Column ColumnSize="ColumnSize.IsAuto">
-                <h2>@L["CasesDataImport"]</h2>
-            </Column>
-            @* @if (HasCreatePermission) *@
-            @* { *@
-            @*     <Column ColumnSize="ColumnSize.IsAuto"> *@
-            @*         <Column ColumnSize="ColumnSize.IsAuto" Class="p-1"> *@
-            @*             <Dropdown> *@
-            @*                 <DropdownToggle Color="Color.Primary"> *@
-            @*                     <i class="fas fa-file-upload"></i> @L["ImportFrom"] *@
-            @*                 </DropdownToggle> *@
-            @*                 <DropdownMenu> *@
-            @*                     <DropdownItem Clicked="ImportFromExcel"> *@
-            @*                         <i class="fas fa-file-excel"></i> @L["ImportFromExcel"] *@
-            @*                     </DropdownItem> *@
-            @*                     <DropdownDivider/> *@
-            @*                     <DropdownItem Clicked="ImportFromCsv"> *@
-            @*                         <i class="fas fa-file-csv"></i> @L["ImportFromCsv"] *@
-            @*                     </DropdownItem> *@
-            @*                 </DropdownMenu> *@
-            @*             </Dropdown> *@
-            @*         </Column> *@
-            @*     </Column> *@
-            @* } *@
-        </Row>
-    </CardHeader>
-    <CardBody>
-        <Alert Color="Color.Warning" @bind-Visible="@visible">
-            <Heading Size="HeadingSize.Is4" TextColor="TextColor.Warning">
-                <i class="fas fa-exclamation-circle"></i> @L["Important"]
-                <CloseButton/>
-            </Heading>
-            <AlertDescription>
-                @L["FormatNote"]
-                @L["CaseIdNote"]
-                @L["DateNote"]
-                @L["GenderNote"]
-                @L["StatusNote"]
-                @L["ImportFormatWarningMessage"]
-                <Card>
-                    <CardBody>
-                        <Table Narrow="true" Bordered="true">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHeaderCell>Case Id</TableHeaderCell>
-                                    <TableHeaderCell>Date Of Registration</TableHeaderCell>
-                                    <TableHeaderCell>Age</TableHeaderCell>
-                                    <TableHeaderCell>Gender</TableHeaderCell>
-                                    <TableHeaderCell>Barangay</TableHeaderCell>
-                                    <TableHeaderCell>Status</TableHeaderCell>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow>
-                                    <TableRowHeader>1</TableRowHeader>
-                                    <TableRowCell>01 04 2021</TableRowCell>
-                                    <TableRowCell>55</TableRowCell>
-                                    <TableRowCell>M</TableRowCell>
-                                    <TableRowCell>POBLACION II</TableRowCell>
-                                    <TableRowCell>1</TableRowCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableRowHeader>2</TableRowHeader>
-                                    <TableRowCell>12 25 2021</TableRowCell>
-                                    <TableRowCell>23</TableRowCell>
-                                    <TableRowCell>F</TableRowCell>
-                                    <TableRowCell>CAUSWAGAN</TableRowCell>
-                                    <TableRowCell>0</TableRowCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                    </CardBody>
-                </Card>
-            </AlertDescription>
-        </Alert>
-        <br/>
-         <Row Class="justify-content-between">
-         <Column ColumnSize="ColumnSize.IsAuto">
-        <InputFile OnChange="@LoadFiles" accept=".csv,.xlsx"/>
-         </Column>
-             <Column ColumnSize="ColumnSize.IsAuto">
-                 <Button Color="Color.Primary"><i class="fas fa-save"></i> @L["Save"]</Button>
-             </Column>
-         </Row>
-        <br/>
-        <RadzenProgressBar class="mt-2 mb-2" Visible="@isLoading" Value="100"  ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-        @* <p hidden="@(!isLoading)">Uploading file..</p> *@
-        <DataGrid TItem="CaseDto"
-                  Data="@importedCases"
-                  Filterable="true"
-                  FilterMethod="DataGridFilterMethod.Contains"
-                  ShowPager="true"
-                  Striped="true"
-                  PageSize="20">
-            <DataGridColumns>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.CaseId)"
-                                Caption="@L["CaseId"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.DateRegistered)"
-                                Caption="@L["DateRegistered"]">
-                    <DisplayTemplate>
-                        @context.DateRegistered.ToShortDateString()
-                    </DisplayTemplate>
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Age)"
-                                Caption="@L["Age"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Gender)"
-                                Caption="@L["Gender"]">
-                    <DisplayTemplate>
-                        @Enum.GetName(context.Gender)
-                    </DisplayTemplate>
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Barangay)"
-                                Caption="@L["Barangay"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.LifeStatus)"
-                                Caption="@L["LifeStatus"]">
-                    <DisplayTemplate>
-                        @Enum.GetName(context.LifeStatus)
-                    </DisplayTemplate>
-                </DataGridColumn>
-            </DataGridColumns>
-        </DataGrid>
-    </CardBody>
+<CardHeader>
+    <Row Class="justify-content-between">
+        <Column ColumnSize="ColumnSize.IsAuto">
+            <h2>@L["CasesDataImport"]</h2>
+        </Column>
+        @* @if (HasCreatePermission) *@
+        @* { *@
+        @*     <Column ColumnSize="ColumnSize.IsAuto"> *@
+        @*         <Column ColumnSize="ColumnSize.IsAuto" Class="p-1"> *@
+        @*             <Dropdown> *@
+        @*                 <DropdownToggle Color="Color.Primary"> *@
+        @*                     <i class="fas fa-file-upload"></i> @L["ImportFrom"] *@
+        @*                 </DropdownToggle> *@
+        @*                 <DropdownMenu> *@
+        @*                     <DropdownItem Clicked="ImportFromExcel"> *@
+        @*                         <i class="fas fa-file-excel"></i> @L["ImportFromExcel"] *@
+        @*                     </DropdownItem> *@
+        @*                     <DropdownDivider/> *@
+        @*                     <DropdownItem Clicked="ImportFromCsv"> *@
+        @*                         <i class="fas fa-file-csv"></i> @L["ImportFromCsv"] *@
+        @*                     </DropdownItem> *@
+        @*                 </DropdownMenu> *@
+        @*             </Dropdown> *@
+        @*         </Column> *@
+        @*     </Column> *@
+        @* } *@
+    </Row>
+</CardHeader>
+<CardBody>
+    <Alert Color="Color.Warning" @bind-Visible="@visible">
+        <Heading Size="HeadingSize.Is4" TextColor="TextColor.Warning">
+            <i class="fas fa-exclamation-circle"></i> @L["Important"]
+            <CloseButton/>
+        </Heading>
+        <AlertDescription>
+            @L["FormatNote"]
+            @L["CaseIdNote"]
+            @L["DateNote"]
+            @L["GenderNote"]
+            @L["StatusNote"]
+            @L["ImportFormatWarningMessage"]
+            <Card>
+                <CardBody>
+                    <Table Narrow="true" Bordered="true">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Case Id</TableHeaderCell>
+                                <TableHeaderCell>Date Of Registration</TableHeaderCell>
+                                <TableHeaderCell>Age</TableHeaderCell>
+                                <TableHeaderCell>Gender</TableHeaderCell>
+                                <TableHeaderCell>Barangay</TableHeaderCell>
+                                <TableHeaderCell>Status</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow>
+                                <TableRowHeader>1</TableRowHeader>
+                                <TableRowCell>01 04 2021</TableRowCell>
+                                <TableRowCell>55</TableRowCell>
+                                <TableRowCell>M</TableRowCell>
+                                <TableRowCell>POBLACION II</TableRowCell>
+                                <TableRowCell>1</TableRowCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableRowHeader>2</TableRowHeader>
+                                <TableRowCell>12 25 2021</TableRowCell>
+                                <TableRowCell>23</TableRowCell>
+                                <TableRowCell>F</TableRowCell>
+                                <TableRowCell>CAUSWAGAN</TableRowCell>
+                                <TableRowCell>0</TableRowCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </CardBody>
+            </Card>
+        </AlertDescription>
+    </Alert>
+
+    <div class="d-flex">
+        <div class="p-2">
+            <Button Color="Color.Primary" Clicked="@InsertRow">
+                <i class="fas fa-plus-square"></i> @L["AddCase"]
+            </Button>
+        </div>
+        <div class="mr-auto p-2">
+            <label for="file-upload" class="custom-file-upload">
+                <i class="fas fa-file-excel"></i> Import Excel
+            </label>
+            <InputFile id="file-upload" style="display: none;" OnChange="@LoadFiles" accept=".xlsx"/>
+        </div>
+        <div class="p-2">
+            <Button Color="Color.Primary" Clicked="@SaveImport">
+                <i class="fas fa-save"></i> @L["Save"]
+            </Button>
+        </div>
+    </div>
+    <br/>
+    <RadzenProgressBar class="mt-2 mb-2" Visible="@isLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    @* <p hidden="@(!isLoading)">Uploading file..</p> *@
+
+    @* <DataGrid TItem="CaseDto" *@
+    @*           Data="@importedCases" *@
+    @*           Filterable="true" *@
+    @*           FilterMethod="DataGridFilterMethod.Contains" *@
+    @*           ShowPager="true" *@
+    @*           Striped="true" *@
+    @*           PageSize="20"> *@
+    @*     <DataGridColumns> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.CaseId)" *@
+    @*                         Caption="@L["CaseId"]"> *@
+    @*         </DataGridColumn> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.DateRegistered)" *@
+    @*                         Caption="@L["DateRegistered"]"> *@
+    @*             <DisplayTemplate> *@
+    @*                 @context.DateRegistered.ToShortDateString() *@
+    @*             </DisplayTemplate> *@
+    @*         </DataGridColumn> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.Age)" *@
+    @*                         Caption="@L["Age"]"> *@
+    @*         </DataGridColumn> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.Gender)" *@
+    @*                         Caption="@L["Gender"]"> *@
+    @*             <DisplayTemplate> *@
+    @*                 @Enum.GetName(context.Gender) *@
+    @*             </DisplayTemplate> *@
+    @*         </DataGridColumn> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.Barangay)" *@
+    @*                         Caption="@L["Barangay"]"> *@
+    @*         </DataGridColumn> *@
+    @*         <DataGridColumn TItem="CaseDto" *@
+    @*                         Field="@nameof(CaseDto.LifeStatus)" *@
+    @*                         Caption="@L["LifeStatus"]"> *@
+    @*             <DisplayTemplate> *@
+    @*                 @Enum.GetName(context.LifeStatus) *@
+    @*             </DisplayTemplate> *@
+    @*         </DataGridColumn> *@
+    @*     </DataGridColumns> *@
+    @* </DataGrid> *@
+
+    <RadzenDataGrid @ref="casesGrid" AllowFiltering="true" AllowPaging="true" PageSize="17" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
+                    Data="@importedCases" TItem="CaseImportDto" RowUpdate="@OnUpdateRow" RowRender="@RowRender" RowCreate="@OnCreateRow">
+        <Columns>
+            <RadzenDataGridColumn TItem="CaseImportDto" Property="CaseId" Title="Case ID">
+                <Template Context="context">
+                    @if (!string.IsNullOrEmpty(context.ErrorMessage))
+                    {
+                        <Tooltip Text="@context.ErrorMessage">
+                            <i class="fas fa-exclamation-triangle"></i> @context.CaseId
+                        </Tooltip>
+                    }
+                    else
+                    {
+                        @context.CaseId
+                    }
+                </Template>
+                <EditTemplate Context="context">
+                    <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
+                <Template Context="context">
+                    @context.DateRegistered.ToShortDateString()
+                </Template>
+                <EditTemplate Context="context">
+                    <RadzenDatePicker @bind-Value="context.DateRegistered" Style="width:100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CaseImportDto" Property="Age" Title="Age">
+                <EditTemplate Context="context">
+                    <RadzenNumeric @bind-Value="context.Age" Min="0" Style="width:100%"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CaseImportDto" Property="Gender" Title="Gender">
+                <Template Context="context">
+                    @Enum.GetName(context.Gender)
+                </Template>
+                <EditTemplate Context="context">
+                    <RadzenDropDown @bind-Value="context.Gender" Data="@genderEnumerable" ValueProperty="Gender" Style="width:100%">
+                    </RadzenDropDown>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="240px" TItem="CaseImportDto" Property="Barangay" Title="Barangay">
+                <EditTemplate Context="context">
+                    <RadzenTextBox @bind-Value="context.Barangay"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="LifeStatus" Title="Life Status">
+                <Template Context="context">
+                    @Enum.GetName(context.LifeStatus)
+                </Template>
+                <EditTemplate Context="context">
+                    <RadzenDropDown @bind-Value="context.LifeStatus" Data="@lifeStatusEnumerable" ValueProperty="LifeStatus" Style="width:100%">
+                    </RadzenDropDown>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+                <Template Context="casedto">
+                    <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(casedto))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="casedto">
+                    <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
+                    </RadzenButton>
+                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(casedto))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                <Template Context="casedto">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </Template>
+                <EditTemplate Context="casedto">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))">
+                    </RadzenButton>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</CardBody>
 </Card>
 
 @code
 {
+    IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
+    IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
     bool visible = true;
     bool HasCreatePermission;
-    bool isLoading = false;
-    List<CaseDto> importedCases;
+    bool isLoading;
+    bool isEditingNewCase;
+
+    RadzenDataGrid<CaseImportDto> casesGrid;
+    List<CaseImportDto> importedCases;
 
     protected override async Task OnInitializedAsync()
     {
-        importedCases = new List<CaseDto>();
+        importedCases = new List<CaseImportDto>();
         HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
-    }
-
-    private async Task ImportFromExcel()
-    {
-    // throw new NotImplementedException();
-    }
-
-    private async Task ImportFromCsv()
-    {
-        throw new UserFriendlyException("testing friendly exception");
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
@@ -180,6 +272,7 @@
         try
         {
             isLoading = true;
+            isEditingNewCase = false;
             var trustedFileNameForFileStorage = Path.GetRandomFileName() + Path.GetExtension(e.File.Name);
             var dir = Path.Combine(Environment.ContentRootPath, Environment.EnvironmentName, "unsafe_uploads");
             var path = Path.Combine(dir, trustedFileNameForFileStorage);
@@ -206,9 +299,9 @@
         }
     }
 
-    private async Task<List<CaseDto>> ReadExcelFile(string filepath)
+    private async Task<List<CaseImportDto>> ReadExcelFile(string filepath)
     {
-        var result = new List<CaseDto>();
+        var result = new List<CaseImportDto>();
         var rowBeforeException = 0;
         var caseIdBeforeException = 0;
         try
@@ -216,16 +309,16 @@
             using (var package = new ExcelPackage(new System.IO.FileInfo(filepath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
-                var caseIdIndex = FindIndexByName(new[] { nameof(CaseDto.CaseId) }, worksheet.Cells, worksheet.Dimension.End.Column);
-                var dateRegIndex = FindIndexByName(new[] { nameof(CaseDto.DateRegistered), "dateofregistration" }, worksheet.Cells, worksheet.Dimension.End.Column);
-                var ageIndex = FindIndexByName(new[] { nameof(CaseDto.Age) }, worksheet.Cells, worksheet.Dimension.End.Column);
-                var genderIndex = FindIndexByName(new[] { nameof(CaseDto.Gender) }, worksheet.Cells, worksheet.Dimension.End.Column);
-                var barangayIndex = FindIndexByName(new[] { nameof(CaseDto.Barangay) }, worksheet.Cells, worksheet.Dimension.End.Column);
-                var statusIndex = FindIndexByName(new[] { nameof(CaseDto.LifeStatus), "status" }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var caseIdIndex = FindIndexByName(new[] { nameof(CaseImportDto.CaseId) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var dateRegIndex = FindIndexByName(new[] { nameof(CaseImportDto.DateRegistered), "dateofregistration" }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var ageIndex = FindIndexByName(new[] { nameof(CaseImportDto.Age) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var genderIndex = FindIndexByName(new[] { nameof(CaseImportDto.Gender) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var barangayIndex = FindIndexByName(new[] { nameof(CaseImportDto.Barangay) }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var statusIndex = FindIndexByName(new[] { nameof(CaseImportDto.LifeStatus), "status" }, worksheet.Cells, worksheet.Dimension.End.Column);
                 for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
                 {
                     rowBeforeException = i;
-                    var caseDto = new CaseDto();
+                    var caseDto = new CaseImportDto { Id = GuidGenerator.Create() };
                     if (caseIdIndex >= 0 && worksheet.Cells[i, caseIdIndex].Value != null)
                     {
                         caseDto.CaseId = Int32.Parse(worksheet.Cells[i, caseIdIndex].Text);
@@ -275,5 +368,88 @@
             }
         }
         return -1;
+    }
+
+    private void RowRender(RowRenderEventArgs<CaseImportDto> args)
+    {
+        if (!string.IsNullOrEmpty(args.Data.ErrorMessage))
+        {
+            args.Attributes.Add("style", $"background-color: #FFA5AB !important;");
+        }
+    }
+
+    int i = 0;
+
+    private async Task SaveImport(){
+        var caseIds = importedCases.Select(_ => _.CaseId).ToArray();
+        var dbCases = await CaseAppService.GetListAsync(new CaseGetListDto());
+        var dbCaseIds = dbCases.Items.Select(_ => _.CaseId).ToArray();
+        foreach (var icase in importedCases)
+        {
+            //If there is more than 1 instance of case id in existing list
+            if (caseIds.Count(_ => _ == icase.CaseId) >1)
+            {
+                icase.ErrorMessage = L["CaseIdDuplicateTable"];
+            }
+            //If there is case id existing from database
+            if (dbCaseIds.Any(_ => _ == icase.CaseId))
+            {
+                icase.ErrorMessage = L["CaseIdDuplicateDatabase"];
+            }
+        }
+    }
+
+    void InsertRow()
+    {
+        if (!isEditingNewCase)
+        {
+            isEditingNewCase = true;
+            casesGrid.InsertRow(new CaseImportDto { Id = GuidGenerator.Create() });
+        }
+    }
+
+    void OnUpdateRow(CaseImportDto caseDto)
+    {
+        var index = importedCases.FindIndex(_ => _.Id == caseDto.Id);
+        if (index >= 0)
+        {
+            importedCases[index] = caseDto;
+        }
+    }
+
+    void OnCreateRow(CaseImportDto caseDto)
+    {
+        isEditingNewCase = false;
+        importedCases.Add(caseDto);
+    }
+
+    void SaveRow(CaseImportDto caseDto)
+    {
+        casesGrid.UpdateRow(caseDto);
+    }
+
+    void EditRow(CaseImportDto caseDto)
+    {
+        casesGrid.EditRow(caseDto);
+    }
+
+    void CancelEdit(CaseImportDto caseDto)
+    {
+        isEditingNewCase = false;
+        casesGrid.CancelEditRow(caseDto);
+    }
+
+    void DeleteRow(CaseImportDto caseDto)
+    {
+        isEditingNewCase = false;
+        if (importedCases.Contains(caseDto))
+        {
+            importedCases.Remove(caseDto);
+            casesGrid.Reload();
+        }
+        else
+        {
+            casesGrid.CancelEditRow(caseDto);
+        }
     }
 }
