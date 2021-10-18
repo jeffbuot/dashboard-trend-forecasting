@@ -14,13 +14,14 @@
                 <h2>@L["CasesRecord"]</h2>
             </div>
 
+
+            <div class="p-2">
+                <Button Color="Color.Primary" Clicked="@RefreshGrid" Disabled="@IsGridLoading">
+                    <i class="fas fa-sync-alt"></i> @L["Refresh"]
+                </Button>
+            </div>
             @if (HasCreatePermission)
-            { 
-                <div class="p-2">
-                  <Button Color="Color.Primary" Clicked="@RefreshGrid" Disabled="@IsGridLoading">
-                      <i class="fas fa-sync-alt"></i> @L["Refresh"]
-                  </Button>
-              </div>
+            {
                 <div class="p-2">
                     <Button Color="Color.Primary" Clicked="@ExcelImport">
                         <i class="fas fa-file-upload"></i> @L["ExcelImport"]
@@ -106,29 +107,35 @@
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
+                @if (HasUpdatePermission)
+                {
+                    <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+                        <Template Context="casedto">
+                            <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(casedto))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="casedto">
+                            <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
+                            </RadzenButton>
+                            <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(casedto))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                }
+                @if (HasDeletePermission)
+                {
+                    <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                        <Template Context="casedto">
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))" @onclick:stopPropagation="true">
+                            </RadzenButton>
+                        </Template>
+                        <EditTemplate Context="casedto">
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))">
+                            </RadzenButton>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                }
 
-                <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
-                    <Template Context="casedto">
-                        <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(casedto))" @onclick:stopPropagation="true">
-                        </RadzenButton>
-                    </Template>
-                    <EditTemplate Context="casedto">
-                        <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
-                        </RadzenButton>
-                        <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(casedto))">
-                        </RadzenButton>
-                    </EditTemplate>
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
-                    <Template Context="casedto">
-                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))" @onclick:stopPropagation="true">
-                        </RadzenButton>
-                    </Template>
-                    <EditTemplate Context="casedto">
-                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))">
-                        </RadzenButton>
-                    </EditTemplate>
-                </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
     </CardBody>
@@ -214,9 +221,10 @@
                 CasesDtoList[index] = caseDto;
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             CasesGrid.CancelEditRow(caseDto);
+            HandleErrorAsync(ex);
         }
     }
 
@@ -266,10 +274,16 @@
     {
         if (CaseAppService.GetAsync(caseDto.Id) != null)
         {
-            await CaseAppService.DeleteAsync(caseDto.Id);
-            CasesDtoList.Remove(caseDto);
-
-            CasesGrid.Reload();
+            try
+            {
+                await CaseAppService.DeleteAsync(caseDto.Id);
+                CasesDtoList.Remove(caseDto);
+                CasesGrid.Reload();
+            }
+            catch (Exception ex)
+            {
+                HandleErrorAsync(ex);
+            }
         }
         else
         {
