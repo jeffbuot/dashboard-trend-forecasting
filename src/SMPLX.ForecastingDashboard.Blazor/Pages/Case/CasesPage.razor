@@ -2,151 +2,279 @@
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.Common
 @using SMPLX.ForecastingDashboard.Permissions
+@using Volo.Abp
 @inject NavigationManager NavigationManager
-@inherits AbpCrudPageBase<ICaseAppService, CaseDto, Guid, CaseGetListDto, CaseInputDto>
+@inject ICaseAppService CaseAppService
+@inherits ForecastingDashboardComponentBase
 
 <Card>
     <CardHeader>
-        <Row Class="justify-content-between">
-            <Column ColumnSize="ColumnSize.IsAuto">
+        <div class="d-flex">
+            <div class="mr-auto p-2">
                 <h2>@L["CasesRecord"]</h2>
-            </Column>
-            @if (HasCreatePermission)
-            {
-                <Column ColumnSize="ColumnSize.IsAuto">
-                    <Row Class="justify-content-start">
-                        <Column ColumnSize="ColumnSize.IsAuto" Class="p-1">
-                            <Button Color="Color.Primary" Clicked="AddTestData">
-                                <i class="fas fa-plus-square"></i> @L["AddCase"]
-                            </Button>
-                        </Column>
-                        <Column ColumnSize="ColumnSize.IsAuto" Class="p-1">
-                            <Dropdown>
-                                <DropdownToggle Color="Color.Primary">
-                                    <i class="fas fa-file-upload"></i> @L["ImportFrom"]
-                                </DropdownToggle>
-                                <DropdownMenu>
-                                    <DropdownItem Clicked="ImportFromExcel">
-                                        <i class="fas fa-file-excel"></i> @L["ImportFromExcel"]
-                                    </DropdownItem>
-                                    <DropdownDivider/>
+            </div>
 
-                                    <DropdownItem Clicked="ImportFromCsv">
-                                        <i class="fas fa-file-csv"></i> @L["ImportFromCsv"]
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </Column>
-                    </Row>
-                </Column>
+            @if (HasCreatePermission)
+            { 
+                <div class="p-2">
+                  <Button Color="Color.Primary" Clicked="@RefreshGrid" Disabled="@IsGridLoading">
+                      <i class="fas fa-sync-alt"></i> @L["Refresh"]
+                  </Button>
+              </div>
+                <div class="p-2">
+                    <Button Color="Color.Primary" Clicked="@ExcelImport">
+                        <i class="fas fa-file-upload"></i> @L["ExcelImport"]
+                    </Button>
+                </div>
+                <div class="p-2">
+                    <Button Color="Color.Primary" Clicked="@InsertRow">
+                        <i class="fas fa-plus-square"></i> @L["InsertNew"]
+                    </Button>
+                </div>
+                @* <div class="p-2"> 
+                    @* <Button Color="Color.Primary" Clicked="@SaveChanges" Disabled="@IsSaving"> *@
+                    @*     @if (IsSaving) *@
+                    @*     { *@
+                    @*         <SpinKit Type="SpinKitType.Chase" Size="20px" Color="#ffffff"/> *@
+                    @*     } *@
+                    @*     else *@
+                    @*     { *@
+                    @*         <i class="fas fa-save"></i> *@
+                    @*         @(" ")@L["Save"] *@
+                    @*     } *@
+                    @* </Button> *@
+                @* </div>*@
             }
-        </Row>
+        </div>
     </CardHeader>
     <CardBody>
-        <DataGrid TItem="CaseDto"
-                  Data="Entities"
-                  ReadData="OnDataGridReadAsync"
-                  TotalItems="TotalCount"
-                  ShowPager="true"
-                  Striped="true"
-                  Filterable="true"
-                  FilterMethod="DataGridFilterMethod.Contains"
-                  PageSize="PageSize">
-            <DataGridColumns>
-                @if (HasDeletePermission || HasUpdatePermission)
-                {
-                    <DataGridEntityActionsColumn TItem="CaseDto" @ref="@EntityActionsColumn">
-                        <DisplayTemplate>
-                            <EntityActions TItem="CaseDto" EntityActionsColumn="@EntityActionsColumn">
-                                @if (HasUpdatePermission)
-                                {
-                                    <EntityAction TItem="CaseDto"
-                                                  Text="@L["Edit"]"
-                                                  Clicked="() => OpenEditModalAsync(context)"/>
-                                }
 
-                                @if (HasDeletePermission)
-                                {
-                                    <EntityAction TItem="CaseDto"
-                                                  Text="@L["Delete"]"
-                                                  Clicked="() => DeleteEntityAsync(context)"
-                                                  ConfirmationMessage="() => GetDeleteConfirmationMessage(context)">
-                                    </EntityAction>
-                                }
-
-                            </EntityActions>
-                        </DisplayTemplate>
-                    </DataGridEntityActionsColumn>
-                }
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.CaseId)"
-                                Caption="@L["CaseId"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.DateRegistered)"
-                                Caption="@L["DateRegistered"]">
-                    <DisplayTemplate>
+        <RadzenProgressBar class="mt-2 mb-2" Visible="@IsGridLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+        <RadzenDataGrid @ref="CasesGrid" AllowFiltering="true" AllowPaging="true" PageSize="17" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
+                        Data="@CasesDtoList" TItem="CaseImportDto" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
+            <Columns>
+                <RadzenDataGridColumn TItem="CaseImportDto" Property="CaseId" Title="Case ID">
+                    <Template Context="context">
+                        @if (!string.IsNullOrEmpty(context.ErrorMessage))
+                        {
+                            <Tooltip Text="@context.ErrorMessage">
+                                <i class="fas fa-exclamation-triangle"></i> @context.CaseId
+                            </Tooltip>
+                        }
+                        else
+                        {
+                            @context.CaseId
+                        }
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
+                    <Template Context="context">
                         @context.DateRegistered.ToShortDateString()
-                    </DisplayTemplate>
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Age)"
-                                Caption="@L["Age"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Gender)"
-                                Caption="@L["Gender"]">
-                    <DisplayTemplate>
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenDatePicker @bind-Value="context.DateRegistered" Style="width:100%"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="CaseImportDto" Property="Age" Title="Age">
+                    <EditTemplate Context="context">
+                        <RadzenNumeric @bind-Value="context.Age" Min="0" Style="width:100%"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="CaseImportDto" Property="Gender" Title="Gender">
+                    <Template Context="context">
                         @Enum.GetName(context.Gender)
-                    </DisplayTemplate>
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.Barangay)"
-                                Caption="@L["Barangay"]">
-                </DataGridColumn>
-                <DataGridColumn TItem="CaseDto"
-                                Field="@nameof(CaseDto.LifeStatus)"
-                                Caption="@L["LifeStatus"]">
-                    <DisplayTemplate>
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenDropDown @bind-Value="context.Gender" Data="@genderEnumerable" ValueProperty="Gender" Style="width:100%">
+                        </RadzenDropDown>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="240px" TItem="CaseImportDto" Property="Barangay" Title="Barangay">
+                    <EditTemplate Context="context">
+                        <RadzenTextBox @bind-Value="context.Barangay"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="LifeStatus" Title="Life Status">
+                    <Template Context="context">
                         @Enum.GetName(context.LifeStatus)
-                    </DisplayTemplate>
-                </DataGridColumn>
-            </DataGridColumns>
-        </DataGrid>
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenDropDown @bind-Value="context.LifeStatus" Data="@lifeStatusEnumerable" ValueProperty="LifeStatus" Style="width:100%">
+                        </RadzenDropDown>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
+                    <Template Context="casedto">
+                        <RadzenButton Icon="edit" Size="ButtonSize.Small" Click="@(args => EditRow(casedto))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="casedto">
+                        <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
+                        </RadzenButton>
+                        <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(casedto))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                    <Template Context="casedto">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))" @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </Template>
+                    <EditTemplate Context="casedto">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => DeleteRow(casedto))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </CardBody>
 </Card>
 
 @code {
+    bool IsGridLoading;
+    bool HasCreatePermission;
+    bool HasDeletePermission;
+    bool HasUpdatePermission;
+    RadzenDataGrid<CaseImportDto> CasesGrid;
+    IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
+    IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
+    List<CaseImportDto> CasesDtoList;
 
-    protected async Task AddTestData()
-    {
-        NewEntity = new CaseInputDto() { Age = 1, Barangay = "Test", CaseId = 1, DateRegistered = DateTime.Now, LifeStatus = LifeStatus.Alive };
-        await CreateEntityAsync();
-    }
-
-    protected async Task Refresh()
-    {
-    // var result = await CaseAppService.GetListAsync(new CaseGetListDto());
-    // CasesList = new List<CaseDto>(result.Items);
-    }
 
     protected override async Task OnInitializedAsync()
     {
         HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
         HasDeletePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Delete);
         HasUpdatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Edit);
-    // CasesList = new List<CaseDto>();
-    // await Refresh();
+        await LoadListData();
     }
 
-    private async Task ImportFromExcel()
+
+    private async Task LoadListData()
     {
-    // throw new NotImplementedException();
+        IsGridLoading = true;
+        var list = await CaseAppService.GetListAsync(new CaseGetListDto());
+        CasesDtoList = new List<CaseImportDto>(ObjectMapper.Map<IReadOnlyList<CaseDto>, IReadOnlyList<CaseImportDto>>(list.Items));
+        IsGridLoading = false;
     }
 
-    private async Task ImportFromCsv()
+    private async Task RefreshGrid()
     {
-    // throw new NotImplementedException();
+        await LoadListData();
+    }
+
+    private async Task ExcelImport()
+    {
+        NavigationManager.NavigateTo("/cases/dataimport");
+    }
+
+    private async Task InsertRow()
+    {
+        CasesGrid.InsertRow(new CaseImportDto()
+        {
+            CaseId = CasesDtoList?.Count > 0 ? CasesDtoList.Max(_ => _.CaseId) + 1 : 1,
+            DateRegistered = DateTime.Now,
+            LifeStatus = LifeStatus.Alive
+        });
+    }
+
+    async Task SaveRow(CaseImportDto caseDto)
+    {
+    // //Check if save is update or create new
+    // if (Guid.Empty == caseDto.Id)
+    // {
+    //     //new
+    //     
+    // }
+    // else
+    // {
+    //     //edit
+    // }
+        var issue = await ValidateImportCasesAsync(caseDto);
+        if (!string.IsNullOrEmpty(issue))
+        {
+            Message.Error(issue);
+            return;
+        }
+        CasesGrid.UpdateRow(caseDto);
+    }
+
+    private async Task OnUpdateRow(CaseImportDto caseDto)
+    {
+        try
+        {
+            await CaseAppService.UpdateAsync(caseDto.Id, ObjectMapper.Map<CaseImportDto, CaseInputDto>(caseDto));
+            var index = CasesDtoList.FindIndex(_ => _.Id == caseDto.Id);
+            if (index >= 0)
+            {
+                CasesDtoList[index] = caseDto;
+            }
+        }
+        catch (Exception e)
+        {
+            CasesGrid.CancelEditRow(caseDto);
+        }
+    }
+
+    private async Task OnCreateRow(CaseImportDto caseDto)
+    {
+        try
+        {
+            var dto = await CaseAppService.CreateAsync(ObjectMapper.Map<CaseImportDto, CaseInputDto>(caseDto));
+            caseDto.Id = dto.Id;
+            CasesDtoList.Add(caseDto);
+        }
+        catch (Exception ex)
+        {
+            CasesGrid.CancelEditRow(caseDto);
+            HandleErrorAsync(ex);
+        }
+    }
+
+    private async Task<string> ValidateImportCasesAsync(CaseImportDto caseDto)
+    {
+        var caseIds = CasesDtoList.Where(_ => _.Id != caseDto.Id).Select(_ => _.CaseId).ToArray();
+        var dbCases = await CaseAppService.GetListAsync(new CaseGetListDto());
+        var dbCaseIds = dbCases.Items.Where(_ => _.Id != caseDto.Id).Select(_ => _.CaseId).ToArray();
+    //If there is more than 1 instance of case id in existing list
+        bool hasTableDuplicate = caseIds.Count(_ => _ == caseDto.CaseId) > 1;
+    //If there is case id existing from database
+        bool hasDbDuplicate = dbCaseIds.Any(_ => _ == caseDto.CaseId);
+        if (hasTableDuplicate || hasDbDuplicate)
+        {
+            return hasTableDuplicate ? L["CaseIdDuplicateTable"] : L["CaseIdDuplicateDatabase"];
+        }
+
+        return "";
+    }
+
+    private void EditRow(CaseImportDto caseDto)
+    {
+        CasesGrid.EditRow(caseDto);
+    }
+
+    private void CancelEdit(CaseImportDto caseDto)
+    {
+        CasesGrid.CancelEditRow(caseDto);
+    }
+
+    private async Task DeleteRow(CaseImportDto caseDto)
+    {
+        if (CaseAppService.GetAsync(caseDto.Id) != null)
+        {
+            await CaseAppService.DeleteAsync(caseDto.Id);
+            CasesDtoList.Remove(caseDto);
+
+            CasesGrid.Reload();
+        }
+        else
+        {
+            CasesGrid.CancelEditRow(caseDto);
+        }
     }
 
 }

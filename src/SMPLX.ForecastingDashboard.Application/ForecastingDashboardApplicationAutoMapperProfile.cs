@@ -13,6 +13,8 @@ namespace SMPLX.ForecastingDashboard
             CreateMap<Case, CaseDto>().ReverseMap();
             CreateMap<CaseInputDto, Case>();
             CreateMap<CaseDto, CaseInputDto>();
+            CreateMap<CaseDto, CaseImportDto>();
+            CreateMap<CaseImportDto, CaseInputDto>();
         }
     }
 }

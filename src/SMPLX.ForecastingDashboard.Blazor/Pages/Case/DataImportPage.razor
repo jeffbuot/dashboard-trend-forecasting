@@ -356,8 +356,8 @@
 
     private async Task SaveImport()
     {
-        isSaving = true;
         if (importedCases.Count < 1) return;
+        isSaving = true;
         beforeSaveIssues = await ValidateImportCasesAsync();
         if (!string.IsNullOrEmpty(beforeSaveIssues))
         {
@@ -422,8 +422,11 @@
         if (!isEditingNewCase)
         {
             isEditingNewCase = true;
-            casesGrid.InsertRow(new CaseImportDto { Id = GuidGenerator.Create() });
-        }
+            casesGrid.InsertRow(new CaseImportDto { Id = GuidGenerator.Create() ,
+                CaseId = importedCases?.Count>0?importedCases.Max(_ => _.CaseId) + 1:1,
+                DateRegistered = DateTime.Now,
+                LifeStatus = LifeStatus.Alive});
+           }
     }
 
     void OnUpdateRow(CaseImportDto caseDto)
