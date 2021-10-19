@@ -35,7 +35,8 @@
     "AnalysisCharts":"Analysis Charts",
     "HeatMap":"Heat Map",
     "TotalRowCount": "Total:",
-    "EnterBarangay":"Enter barangay..."
+    "EnterBarangay":"Enter barangay...",
+    "ConfirmDeleteCase":"Are you sure to delete case id '{0}'?"
     
   }
 }

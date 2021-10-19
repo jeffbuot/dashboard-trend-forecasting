@@ -73,9 +73,6 @@
                     <EditTemplate Context="context">
                         <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
                     </EditTemplate>
-                    <FooterTemplate>
-                        @L["TotalRowCount"]<b>@CasesGrid.View.Count()</b>
-                    </FooterTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
                     <Template Context="context">
@@ -195,26 +192,17 @@
 
     private async Task InsertRow()
     {
-        CasesGrid.InsertRow(new CaseImportDto()
+        var newCase = new CaseImportDto()
         {
             CaseId = CasesDtoList?.Count > 0 ? CasesDtoList.Max(_ => _.CaseId) + 1 : 1,
             DateRegistered = DateTime.Now,
             LifeStatus = LifeStatus.Alive
-        });
+        };
+        CasesGrid.InsertRow(newCase);
     }
 
     async Task SaveRow(CaseImportDto caseDto)
     {
-    // //Check if save is update or create new
-    // if (Guid.Empty == caseDto.Id)
-    // {
-    //     //new
-    //     
-    // }
-    // else
-    // {
-    //     //edit
-    // }
         var issue = await ValidateImportCasesAsync(caseDto);
         if (!string.IsNullOrEmpty(issue))
         {
@@ -286,7 +274,10 @@
 
     private async Task DeleteRow(CaseImportDto caseDto)
     {
-        if (CaseAppService.GetAsync(caseDto.Id) != null)
+       var result = await Message.Confirm(L["ConfirmDeleteCase", caseDto.CaseId]);
+        if (!result) return;
+        
+        if (caseDto.Id!=Guid.Empty)
         {
             try
             {

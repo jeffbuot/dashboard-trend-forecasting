@@ -136,9 +136,7 @@
                     <EditTemplate Context="context">
                         <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
                     </EditTemplate>
-                    <FooterTemplate>
-                        @L["TotalRowCount"]<b>@casesGrid.View.Count()</b>
-                    </FooterTemplate>
+                    
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
                     <Template Context="context">
@@ -165,7 +163,7 @@
                 <RadzenDataGridColumn Width="240px" TItem="CaseImportDto" Property="Barangay" Title="Barangay">
                     <EditTemplate Context="context">
                         <RadzenAutoComplete @bind-Value="context.Barangay" Placeholder="@L["EnterBarangay"]" LoadData=@OnLoadSuggestedData Data=@SuggestedBarangays TextProperty="Name"/>
-                   </EditTemplate>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="LifeStatus" Title="Life Status">
                     <Template Context="context">
@@ -231,11 +229,13 @@
         HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
         StaticSuggestedBarangays = GeoOptions.Value.Barangays;
     }
+
     private async Task OnLoadSuggestedData(LoadDataArgs args)
     {
-        SuggestedBarangays = StaticSuggestedBarangays.Where(_ => _.Name.ToLower().Contains(args.Filter.ToLower())).ToList(); 
+        SuggestedBarangays = StaticSuggestedBarangays.Where(_ => _.Name.ToLower().Contains(args.Filter.ToLower())).ToList();
         InvokeAsync(StateHasChanged);
     }
+
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
         try
@@ -459,9 +459,11 @@
         casesGrid.CancelEditRow(caseDto);
     }
 
-    void DeleteRow(CaseImportDto caseDto)
+    async Task DeleteRow(CaseImportDto caseDto)
     {
         isEditingNewCase = false;
+        var result = await Message.Confirm(L["ConfirmDeleteCase", caseDto.CaseId]);
+        if (!result) return;
         if (importedCases.Contains(caseDto))
         {
             importedCases.Remove(caseDto);
