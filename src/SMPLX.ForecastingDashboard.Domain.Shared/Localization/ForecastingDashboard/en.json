@@ -34,7 +34,8 @@
     "InsertNew":"Insert New",
     "AnalysisCharts":"Analysis Charts",
     "HeatMap":"Heat Map",
-    "TotalRowCount": "Total:"
+    "TotalRowCount": "Total:",
+    "EnterBarangay":"Enter barangay..."
     
   }
 }

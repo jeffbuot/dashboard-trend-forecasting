@@ -2,10 +2,13 @@
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.Common
 @using SMPLX.ForecastingDashboard.Permissions
+@using SMPLX.ForecastingDashboard.Settings
 @using Volo.Abp
+@using Microsoft.Extensions.Options
+@inherits ForecastingDashboardComponentBase
 @inject NavigationManager NavigationManager
 @inject ICaseAppService CaseAppService
-@inherits ForecastingDashboardComponentBase
+@inject IOptions<GeologicalOptions> GeoOptions
 
 <Card>
     <CardHeader>
@@ -70,9 +73,9 @@
                     <EditTemplate Context="context">
                         <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
                     </EditTemplate>
-                     <FooterTemplate>
-                          @L["TotalRowCount"]<b>@CasesGrid.View.Count()</b>
-                       </FooterTemplate>
+                    <FooterTemplate>
+                        @L["TotalRowCount"]<b>@CasesGrid.View.Count()</b>
+                    </FooterTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
                     <Template Context="context">
@@ -98,7 +101,7 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="240px" TItem="CaseImportDto" Property="Barangay" Title="Barangay">
                     <EditTemplate Context="context">
-                        <RadzenTextBox @bind-Value="context.Barangay"/>
+                        <RadzenAutoComplete @bind-Value="context.Barangay" Placeholder="@L["EnterBarangay"]" LoadData=@OnLoadSuggestedData Data=@SuggestedBarangays TextProperty="Name"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="LifeStatus" Title="Life Status">
@@ -153,6 +156,8 @@
     IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
     IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
     List<CaseImportDto> CasesDtoList;
+    List<Location> SuggestedBarangays;
+    List<Location> StaticSuggestedBarangays;
 
 
     protected override async Task OnInitializedAsync()
@@ -160,9 +165,15 @@
         HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
         HasDeletePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Delete);
         HasUpdatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Edit);
+        StaticSuggestedBarangays = GeoOptions.Value.Barangays;
         await LoadListData();
     }
 
+    private async Task OnLoadSuggestedData(LoadDataArgs args)
+    {
+        SuggestedBarangays = StaticSuggestedBarangays.Where(_ => _.Name.ToLower().Contains(args.Filter.ToLower())).ToList();
+        InvokeAsync(StateHasChanged);
+    }
 
     private async Task LoadListData()
     {

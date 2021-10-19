@@ -9,13 +9,16 @@
 @using System.Data
 @using System.Globalization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Options
 @using OfficeOpenXml
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.Common
+@using SMPLX.ForecastingDashboard.Settings
 @using Volo.Abp.Guids
 @inject IWebHostEnvironment Environment
 @inject IGuidGenerator GuidGenerator
 @inject ICaseAppService CaseAppService
+@inject IOptions<GeologicalOptions> GeoOptions
 @inherits ForecastingDashboardComponentBase
 
 @attribute [Authorize(ForecastingDashboardPermissions.Case.Default + ".Create")]
@@ -26,27 +29,6 @@
             <Column ColumnSize="ColumnSize.IsAuto">
                 <h2>@L["CasesDataImport"]</h2>
             </Column>
-            @* @if (HasCreatePermission) *@
-            @* { *@
-            @*     <Column ColumnSize="ColumnSize.IsAuto"> *@
-            @*         <Column ColumnSize="ColumnSize.IsAuto" Class="p-1"> *@
-            @*             <Dropdown> *@
-            @*                 <DropdownToggle Color="Color.Primary"> *@
-            @*                     <i class="fas fa-file-upload"></i> @L["ImportFrom"] *@
-            @*                 </DropdownToggle> *@
-            @*                 <DropdownMenu> *@
-            @*                     <DropdownItem Clicked="ImportFromExcel"> *@
-            @*                         <i class="fas fa-file-excel"></i> @L["ImportFromExcel"] *@
-            @*                     </DropdownItem> *@
-            @*                     <DropdownDivider/> *@
-            @*                     <DropdownItem Clicked="ImportFromCsv"> *@
-            @*                         <i class="fas fa-file-csv"></i> @L["ImportFromCsv"] *@
-            @*                     </DropdownItem> *@
-            @*                 </DropdownMenu> *@
-            @*             </Dropdown> *@
-            @*         </Column> *@
-            @*     </Column> *@
-            @* } *@
         </Row>
     </CardHeader>
     <CardBody>
@@ -182,8 +164,8 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="240px" TItem="CaseImportDto" Property="Barangay" Title="Barangay">
                     <EditTemplate Context="context">
-                        <RadzenTextBox @bind-Value="context.Barangay"/>
-                    </EditTemplate>
+                        <RadzenAutoComplete @bind-Value="context.Barangay" Placeholder="@L["EnterBarangay"]" LoadData=@OnLoadSuggestedData Data=@SuggestedBarangays TextProperty="Name"/>
+                   </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="LifeStatus" Title="Life Status">
                     <Template Context="context">
@@ -201,7 +183,7 @@
                         </RadzenButton>
                     </Template>
                     <EditTemplate Context="casedto">
-                        <RadzenButton Icon="save" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
+                        <RadzenButton Icon="add" Size="ButtonSize.Small" Click="@((args) => SaveRow(casedto))">
                         </RadzenButton>
                         <RadzenButton Icon="cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => CancelEdit(casedto))">
                         </RadzenButton>
@@ -235,6 +217,8 @@
     RadzenDataGrid<CaseImportDto> casesGrid;
     List<CaseImportDto> importedCases;
     string beforeSaveIssues;
+    List<Location> SuggestedBarangays;
+    List<Location> StaticSuggestedBarangays;
 
     bool HideSaveIssues
     {
@@ -245,8 +229,13 @@
     {
         importedCases = new List<CaseImportDto>();
         HasCreatePermission = await AuthorizationService.IsGrantedAsync(ForecastingDashboardPermissions.Case.Create);
+        StaticSuggestedBarangays = GeoOptions.Value.Barangays;
     }
-
+    private async Task OnLoadSuggestedData(LoadDataArgs args)
+    {
+        SuggestedBarangays = StaticSuggestedBarangays.Where(_ => _.Name.ToLower().Contains(args.Filter.ToLower())).ToList(); 
+        InvokeAsync(StateHasChanged);
+    }
     private async Task LoadFiles(InputFileChangeEventArgs e)
     {
         try
