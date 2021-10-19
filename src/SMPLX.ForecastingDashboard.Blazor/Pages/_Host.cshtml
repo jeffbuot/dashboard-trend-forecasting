@@ -17,7 +17,9 @@
     <title>SMPLX.ForecastingDashboard.Blazor</title>
     <base href="~/"/>
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/default-base.css">
-    <link href="_content/Blazorise.SpinKit/blazorise.spinkit.css" rel="stylesheet" />
+    <link href="_content/Blazorise.SpinKit/blazorise.spinkit.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="https://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
     <abp-style-bundle name="@BlazorBasicThemeBundles.Styles.Global"/>
 </head>
 <body class="abp-application-layout bg-light @rtl">
@@ -33,10 +35,78 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+<script>
+window.initMap = (heatdata)=>{
+    var mapDom = document.getElementById("hmap");
+    if (!mapDom)return;
+        var tdata = [{lat: 6.961836, lng:126.012958, count: 5,}, {lat: 6.961836, lng: 125.989820, count: 10}];
+        // var testData = {
+        //   max: 8,
+        //   data: ,
+        // }; 
+        var mapData = {
+                    max: 8,
+                    data: heatdata
+                  };
+        console.log(tdata)
+        console.log(heatdata)
+        var baseLayer = L.tileLayer(
+          'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+             '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © ' +
+              '<a href="http://cloudmade.com">CloudMade</a>',
+            maxZoom: 14
+          }
+        );
 
+        var cfg = {
+          // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+          "radius": .009,
+          "maxOpacity": 1, 
+          // scales the radius based on map zoom
+          "scaleRadius": true, 
+          // if set to false the heatmap uses the global maximum for colorization
+          // if activated: uses the data maximum within the current map boundaries 
+          //   (there will always be a red spot with useLocalExtremas true)
+          "useLocalExtrema": true,
+          // which field name in your data represents the latitude - default "lat"
+          latField: 'lat',
+          // which field name in your data represents the longitude - default "lng"
+          lngField: 'lng',
+          // which field name in your data represents the data value - default "value"
+          valueField: 'count'
+        };
+
+
+        var heatmapLayer = new HeatmapOverlay(cfg);
+
+        var map = new L.Map('hmap', {
+          center: new L.LatLng( 7.092015, 126.105506),
+          zoom: 11,
+          layers: [baseLayer, heatmapLayer]
+        });
+
+    //      L.popup()
+    // .setLatLng([ 6.961836,126.012958])
+    // .setContent("POBLACION")
+    // .openOn(map);
+    //      L.popup()
+    // .setLatLng([ 6.961836,125.989820])
+    // .setContent("CALUBIHAN")
+    // .openOn(map);
+         heatmapLayer.setData(mapData);
+
+        // make accessible for debugging
+        layer = heatmapLayer;
+}
+</script>
 <abp-script-bundle name="@BlazorBasicThemeBundles.Scripts.Global"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script src="_content/Blazorise.Charts/blazorise.charts.js"></script>
 <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+
+<script src="https://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script src="/libs/heatmapjs/heatmap.min.js"></script>
+<script src="/libs/heatmapjs/leaflet-heatmap.js"></script>
 </body>
 </html>

@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Newtonsoft.Json;
 using SMPLX.ForecastingDashboard.MultiTenancy;
+using SMPLX.ForecastingDashboard.Settings;
 using Volo.Abp.AuditLogging;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Emailing;
@@ -37,10 +41,18 @@ namespace SMPLX.ForecastingDashboard
             {
                 options.IsEnabled = MultiTenancyConsts.IsEnabled;
             });
-
+            ConfigureGeologicalOptions(context.Services.GetConfiguration());
 #if DEBUG
             context.Services.Replace(ServiceDescriptor.Singleton<IEmailSender, NullEmailSender>());
 #endif
+        }
+
+        public void ConfigureGeologicalOptions(IConfiguration config)
+        {
+            Configure<GeologicalOptions>(options =>
+            {
+                options.Barangays = config.GetSection("GeologicalData:Barangays").Get<List<Location>>();
+            });
         }
     }
 }

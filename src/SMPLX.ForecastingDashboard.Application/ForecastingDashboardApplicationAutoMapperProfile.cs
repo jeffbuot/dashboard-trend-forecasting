@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using SMPLX.ForecastingDashboard.Cases;
+using SMPLX.ForecastingDashboard.ForecastData;
+using SMPLX.ForecastingDashboard.Settings;
 
 namespace SMPLX.ForecastingDashboard
 {
@@ -15,6 +17,7 @@ namespace SMPLX.ForecastingDashboard
             CreateMap<CaseDto, CaseInputDto>();
             CreateMap<CaseDto, CaseImportDto>();
             CreateMap<CaseImportDto, CaseInputDto>();
+            CreateMap<Location, HeatMapDto>();
         }
     }
 }
