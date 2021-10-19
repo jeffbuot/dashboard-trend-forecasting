@@ -21,12 +21,34 @@ namespace ConsoleApp1
             Period = period;
         }
     }
+	public class Test{
+		public string Name {get;set;}
+		public int Val {get;set;}
+		public override string ToString(){
+		return String.Format("Name: {0}, Val: {1}",Name,Val);
+		}
 
+        public class GroupedTest
+        {
+            public string Name { get; set; }
+            public int Count { get; set; }
+        }
+    }
     class Program
     {
         static void Main(string[] args)
-        {
-            var list = new List<Case> { new Case(1,"",1), new Case(1,"",1), new Case(1,"",1)};
+        {	
+        var list1 = new List<Test>(){
+         		new Test{Name="A1",Val = 1},
+         		new Test{Name="A1",Val = 4},
+         		new Test{Name="B1",Val = 2},
+         		new Test{Name="B1",Val = 3},
+         		new Test{Name="A1",Val = 1}
+         		};
+        var x =list1.GroupBy(_ => _.Name).Select(_ => new Test.GroupedTest(){Name = _.First().Name,Count = _.Count()}).ToList();
+        Console.WriteLine(x);
+            
+        var list = new List<Case> { new Case(1,"",1), new Case(1,"",1), new Case(1,"",1)};
             foreach (var l in list)
             {
                 l.Period = 2;

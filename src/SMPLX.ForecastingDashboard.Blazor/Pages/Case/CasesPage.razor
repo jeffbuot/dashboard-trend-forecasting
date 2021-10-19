@@ -70,6 +70,9 @@
                     <EditTemplate Context="context">
                         <RadzenNumeric @bind-Value="context.CaseId" Min="0" Style="width:100%"/>
                     </EditTemplate>
+                     <FooterTemplate>
+                          @L["TotalRowCount"]<b>@CasesGrid.View.Count()</b>
+                       </FooterTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Width="200px" TItem="CaseImportDto" Property="DateRegistered" Title="Date Of Registration">
                     <Template Context="context">

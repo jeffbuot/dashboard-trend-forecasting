@@ -3,50 +3,66 @@
 @using System.Globalization
 @using SMPLX.ForecastingDashboard.Helpers
 @using Microsoft.Extensions.Localization
-@using SMPLX.ForecastingDashboard.Localization
-@inject IStringLocalizer<ForecastingDashboardResource> L
+@using Microsoft.Extensions.Options
+@using SMPLX.ForecastingDashboard.Cases
+@using SMPLX.ForecastingDashboard.ForecastData
+@using SMPLX.ForecastingDashboard.Settings
+@inherits ForecastingDashboardComponentBase
+
+@inject IJSRuntime JS
+@inject IOptions<GeologicalOptions> GeoOptions
+@inject ICaseAppService CaseAppService
+
 <h3>@L["DataDasbhoard"]</h3>
-<Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
-@*
-    <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
-<Row Gutter="(20,20)">
-    <Column ColumnSize="ColumnSize.Is6">
-        <Card Class="p-2">
-            <Row Class="justify-content-between">
-                <Column ColumnSize="ColumnSize.IsAuto">
-                    <h5>
-                        @L["LinearTrendForecast"]
-                    </h5>
+<RadzenProgressBar class="mt-2 mb-2" Visible="@IsMapLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+<Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+    <Items>
+        <Tab Name="charts">@L["AnalysisCharts"]</Tab>
+        <Tab Name="heatmap">@L["HeatMap"]</Tab>
+    </Items>
+    <Content>
+        <TabPanel Name="charts">
+            <Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
+            @*
+            <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
+            <Row Gutter="(20,20)">
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Card Class="p-2">
+                        <Row Class="justify-content-between">
+                            <Column ColumnSize="ColumnSize.IsAuto">
+                                <h5>
+                                    @L["LinearTrendForecast"]
+                                </h5>
+                            </Column>
+                            <Column ColumnSize="ColumnSize.IsAuto">
+                                <Tooltip Text="@L["Expand"]">
+                                    <Button Clicked="@(async () => await ShowLFModal())">
+                                        <i class="fas fa-expand"></i>
+                                    </Button>
+                                </Tooltip>
+                            </Column>
+                        </Row>
+                        <LineChart @ref="lineChart" TItem="double"/>
+                    </Card>
                 </Column>
-                <Column ColumnSize="ColumnSize.IsAuto">
-                    <Tooltip Text="@L["Expand"]">
-                    <Button Clicked="@(async () => await ShowLFModal())">
-                        <i class="fas fa-expand"></i>
-                    </Button>
-                    </Tooltip>
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Card Class="p-2">
+                        <h5>
+                            @L["SeasonalTrendForecast"]
+                        </h5>
+                        <LineChart @ref="lineChart2" TItem="double"/>
+                    </Card>
                 </Column>
             </Row>
-            <LineChart @ref="lineChart" TItem="double"/>
-        </Card>
-    </Column>
-    <Column ColumnSize="ColumnSize.Is6">
-        <Card Class="p-2">
-            <h5>
-                @L["SeasonalTrendForecast"]
-            </h5>
-            <LineChart @ref="lineChart2" TItem="double"/>
-        </Card>
-    </Column>
-</Row>
-<Row >
-
-</Row>
-@* <Row> *@
-@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
-@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
-@*     <Column ColumnSize="ColumnSize.IsAuto"><LineChart @ref="lineChart" TItem="double"/></Column> *@
-@* </Row> *@
-<Modal @ref="LinearForecastModal" >
+        </TabPanel>
+        <TabPanel Name="heatmap">
+            <Card>
+                <div id="hmap" style="height:650px;"></div>
+            </Card>
+        </TabPanel>
+    </Content>
+</Tabs>
+<Modal @ref="LinearForecastModal">
     <ModalBackdrop/>
     <ModalContent Size="ModalSize.ExtraLarge" Centered="true">
         <ModalHeader>
@@ -65,6 +81,8 @@
 </Modal>
 
 @code {
+    string selectedTab = "heatmap";
+    bool IsMapLoading;
     Modal LinearForecastModal;
     LineChart<double> lineChart;
     LineChart<double> lineChart_modal;
@@ -75,7 +93,41 @@
         if (firstRender)
         {
             await HandleRedraw();
+            await DrawMap();
         }
+    }
+
+    private async Task OnSelectedTabChanged(string arg)
+    {
+        selectedTab = arg;
+        if (arg == "charts")
+        {
+        }
+        else
+        {
+        }
+    }
+
+    private async Task DrawMap()
+    {
+        IsMapLoading = true;
+        var geoOptions = GeoOptions.Value;
+        var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(geoOptions.Barangays);
+        var casesresult = await CaseAppService.GetListAsync(new CaseGetListDto());
+        var cases = casesresult.Items.GroupBy(_ => _.Barangay).Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
+
+        heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
+        await JS.InvokeVoidAsync("initMap", heatData);
+        IsMapLoading = false;
+    }
+
+    private string Flatten(string s) => s.ToLower().Replace(" ", "");
+    private bool FlatMatch(string a, string b) => Flatten(a).StartsWith(Flatten(b));
+
+    public double GetRandomNumber(double minimum, double maximum)
+    {
+        Random random = new Random();
+        return random.NextDouble() * (maximum - minimum) + minimum;
     }
 
     async Task HandleRedraw()
@@ -131,7 +183,7 @@
         await lineChart.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
         await lineChart_modal.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
         await lineChart2.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
-        
+
         var nextYearMonths = months.Select(_ => _.Substring(0, 3) + " " + 2021).ToArray();
         var latestPeriod = datasets.Count;
         var ltfs = new List<double>();
@@ -222,6 +274,12 @@
         LinearForecastModal.Hide();
     }
 
+    public class LocationCasesDto
+    {
+        public string Name { get; set; }
+        public double Count { get; set; }
+    }
+
     //public class DataHelper
     //{
     //    public static List<Case> ReadFromExcelFile(string filePath)
@@ -270,8 +328,5 @@
             Year = year;
         }
     }
-
-
-
 
 }

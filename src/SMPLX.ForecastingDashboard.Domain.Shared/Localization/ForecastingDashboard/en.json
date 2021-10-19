@@ -31,6 +31,10 @@
     "CaseIdDuplicateDatabase": "This case id already exist in the database.",
     "DataImportSuccess": "Data successfully saved.",
     "ExcelImport": "Excel Import",
-    "InsertNew":"Insert New"
+    "InsertNew":"Insert New",
+    "AnalysisCharts":"Analysis Charts",
+    "HeatMap":"Heat Map",
+    "TotalRowCount": "Total:"
+    
   }
 }

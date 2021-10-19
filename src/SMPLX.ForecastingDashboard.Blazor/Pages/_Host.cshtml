@@ -39,16 +39,12 @@
 window.initMap = (heatdata)=>{
     var mapDom = document.getElementById("hmap");
     if (!mapDom)return;
-        var tdata = [{lat: 6.961836, lng:126.012958, count: 5,}, {lat: 6.961836, lng: 125.989820, count: 10}];
-        // var testData = {
-        //   max: 8,
-        //   data: ,
-        // }; 
+    
         var mapData = {
                     max: 8,
                     data: heatdata
                   };
-        console.log(tdata)
+        console.log()
         console.log(heatdata)
         var baseLayer = L.tileLayer(
           'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -81,8 +77,8 @@ window.initMap = (heatdata)=>{
         var heatmapLayer = new HeatmapOverlay(cfg);
 
         var map = new L.Map('hmap', {
-          center: new L.LatLng( 7.092015, 126.105506),
-          zoom: 11,
+          center: new L.LatLng( 7.05626, 126.06125),//,7.092015, 126.105506
+          zoom: 12,
           layers: [baseLayer, heatmapLayer]
         });
 
@@ -94,10 +90,25 @@ window.initMap = (heatdata)=>{
     // .setLatLng([ 6.961836,125.989820])
     // .setContent("CALUBIHAN")
     // .openOn(map);
-         heatmapLayer.setData(mapData);
-
-        // make accessible for debugging
-        layer = heatmapLayer;
+    var legend = L.control({ position: "bottomleft" });
+    
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create("div", "legend");
+      div.innerHTML += "<h4>Barangays</h4>";
+      let ht = '<table>';
+      let total = 0;
+      heatdata.forEach(h=>{
+          total+=h.count;
+          ht += '<tr><td>'+h.count+'</td><td>'+h.name+'</td></tr>';
+      });
+      ht += '<tr><td>'+total+'</td><td>Total</td></tr></table>';
+      div.innerHTML += ht;
+      return div;
+      }
+      legend.addTo(map);
+    
+      heatmapLayer.setData(mapData);
+      layer = heatmapLayer;
 }
 </script>
 <abp-script-bundle name="@BlazorBasicThemeBundles.Scripts.Global"/>
