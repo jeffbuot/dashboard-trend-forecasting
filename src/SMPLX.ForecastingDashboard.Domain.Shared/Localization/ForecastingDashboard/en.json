@@ -39,6 +39,6 @@
     "ConfirmDeleteCase":"Are you sure to delete case id '{0}'?",
     "RangeStepLabel":"Step:",
     "InvalidDateRange":"Invalid: start date should be less than end date.",
-    "FetchRangeDate":"Date Range to Fetch:"
+    "FetchRangeDate":"Date range to filter:"
   }
 }

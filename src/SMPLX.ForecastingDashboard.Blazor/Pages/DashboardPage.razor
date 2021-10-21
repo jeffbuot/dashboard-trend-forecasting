@@ -57,8 +57,14 @@
         </TabPanel>
         <TabPanel Name="heatmap">
             <Card>
-                <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
-                <DateRangePicker MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
+                <Row class="mt-2">
+                    <Column ColumnSize="ColumnSize.IsAuto">
+                        <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
+                    </Column>
+                    <Column ColumnSize="ColumnSize.IsAuto">
+                        <DateRangePicker MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
+                    </Column>
+                </Row>
                 <div id="hmap" style="height:650px;"></div>
             </Card>
         </TabPanel>
@@ -90,24 +96,24 @@
     LineChart<double> lineChart_modal;
     LineChart<double> lineChart2;
 
-    DateTime OldestRecordDate;
-    DateRange HeatmapDateRange;
+    DateTime OldestRecordDate = DateTime.Now.AddYears(-5);
+    IReadOnlyList<CaseDto> Cases;
 
-    Dictionary<string, DateRange> DateRanges => new Dictionary<string, DateRange>
+    Dictionary<string, DateRange> DateRanges => new()
     {
         {
-            "Whole History", new DateRange
+            "Overall History", new DateRange
             {
-                Start = HeatmapDateRange.Start,
-                End =HeatmapDateRange.End
+                Start = OldestRecordDate,
+                End = DateTime.Now
             }
         },
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        OldestRecordDate = new DateTime(1950, 1, 1);
-        HeatmapDateRange = new DateRange { Start = OldestRecordDate, End = DateTime.Now };
+        await ReloadCaseData();
+        OldestRecordDate = Cases.Min(_ => _.DateRegistered);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -117,6 +123,12 @@
             await HandleRedraw();
             await DrawMap();
         }
+    }
+
+    private async Task ReloadCaseData()
+    {
+        var res = await CaseAppService.GetListAsync(new CaseGetListDto());
+        Cases = res.Items;
     }
 
     private async Task OnSelectedTabChanged(string arg)
@@ -133,16 +145,12 @@
     private async Task DrawMap(DateRange dr = null)
     {
         IsMapLoading = true;
-        var geoOptions = GeoOptions.Value;
-        var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(geoOptions.Barangays);
-        var casesresult = await CaseAppService.GetListAsync(new CaseGetListDto());
-        OldestRecordDate = casesresult.Items.Min(_ => _.DateRegistered);
+        var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
         if (dr == null)
         {
-            HeatmapDateRange = new DateRange { End = DateTimeOffset.Now, Start = OldestRecordDate };
-            dr = HeatmapDateRange;
+            dr = new DateRange { End = DateTimeOffset.Now, Start = OldestRecordDate };
         }
-        var cases = casesresult.Items.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
+        var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
             .GroupBy(_ => _.Barangay)
             .Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
 
@@ -155,7 +163,6 @@
     {
         await DrawMap(dr);
     }
-
 
     private string Flatten(string s) => s.ToLower().Replace(" ", "");
     private bool FlatMatch(string a, string b) => Flatten(a).StartsWith(Flatten(b));
