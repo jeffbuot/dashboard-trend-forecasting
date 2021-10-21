@@ -7,7 +7,7 @@
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.ForecastData
 @using SMPLX.ForecastingDashboard.Settings
-@inherits ForecastingDashboardComponentBase
+@inherits SMPLX.ForecastingDashboard.Blazor.ViewModels.DashboardViewModel
 
 @inject IJSRuntime JS
 @inject IOptions<GeologicalOptions> GeoOptions
@@ -16,8 +16,8 @@
 <h3>@L["DataDasbhoard"]</h3>
 <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
     <Items>
-        <Tab Name="charts">@L["AnalysisCharts"]</Tab>
         <Tab Name="heatmap">@L["HeatMap"]</Tab>
+        <Tab Name="charts">@L["AnalysisCharts"]</Tab>
     </Items>
     <Content>
         <TabPanel Name="charts">
@@ -61,7 +61,7 @@
                         <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
                     </Column>
                     <Column ColumnSize="ColumnSize.IsAuto">
-                        <DateRangePicker MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
+                        <DateRangePicker @ref="heatmapDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
                     </Column>
                 </Row>
                 <RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading"
@@ -94,12 +94,10 @@
     string selectedTab = "heatmap";
     bool IsMapLoading;
     Modal LinearForecastModal;
+    DateRangePicker heatmapDateRangePicker;
     LineChart<double> lineChart;
     LineChart<double> lineChart_modal;
     LineChart<double> lineChart2;
-
-    DateTime OldestRecordDate = DateTime.Now.AddYears(-5);
-    IReadOnlyList<CaseDto> Cases;
 
     Dictionary<string, DateRange> DateRanges => new()
     {
@@ -112,39 +110,15 @@
         },
     };
 
-    protected override async Task OnInitializedAsync()
-    {
-        await ReloadCaseData();
-        OldestRecordDate = Cases.Min(_ => _.DateRegistered);
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await HandleRedraw();
-            await DrawMap();
+            await DrawHeatMap();
         }
     }
 
-    private async Task ReloadCaseData()
-    {
-        var res = await CaseAppService.GetListAsync(new CaseGetListDto());
-        Cases = res.Items;
-    }
-
-    private async Task OnSelectedTabChanged(string arg)
-    {
-        selectedTab = arg;
-        if (arg == "charts")
-        {
-        }
-        else
-        {
-        }
-    }
-
-    private async Task DrawMap(DateRange dr = null)
+    private async Task DrawHeatMap(DateRange dr = null)
     {
         IsMapLoading = true;
         var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
@@ -171,11 +145,16 @@
 
     private async Task OnHeatmapRangeSelect(DateRange dr)
     {
-        await DrawMap(dr);
+        await DrawHeatMap(dr);
     }
-
-    private string Flatten(string s) => s.ToLower().Replace(" ", "");
-    private bool FlatMatch(string a, string b) => Flatten(a).StartsWith(Flatten(b));
+    
+    private async Task OnSelectedTabChanged(string arg)
+    {
+        selectedTab = arg;
+        if (arg == "charts")
+        {
+        }
+    }
 
     async Task HandleRedraw()
     {
@@ -304,12 +283,6 @@
     List<string> borderColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 1f), ChartColor.FromRgba(140, 94, 255, 1f), ChartColor.FromRgba(75, 192, 192, 1f) };
     string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
 
-    List<double> RandomizeData()
-    {
-        var r = new Random(DateTime.Now.Millisecond);
-
-        return new List<double> { r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble(), r.Next(3, 50) * r.NextDouble() };
-    }
 
     private async Task ShowLFModal()
     {
@@ -327,39 +300,6 @@
         public double Count { get; set; }
     }
 
-    //public class DataHelper
-    //{
-    //    public static List<Case> ReadFromExcelFile(string filePath)
-    //    {
-    //        SpreadsheetInfo.SetLicense("FREE-LIMITED-KEY");
-
-    //        var workbook = ExcelFile.Load(filePath);
-
-    //        // Select the first worksheet from the file.
-    //        var worksheet = workbook.Worksheets[0];
-
-    //        // Create DataTable from an Excel worksheet.
-    //        var dataTable = worksheet.CreateDataTable(new CreateDataTableOptions()
-    //            {
-    //                ColumnHeaders = true,
-    //                StartRow = 0,
-    //                NumberOfColumns = 4,
-    //                NumberOfRows = worksheet.Rows.Count,
-    //                Resolution = ColumnTypeResolution.AutoPreferStringCurrentCulture
-    //            });
-    //        var sb = new StringBuilder();
-    //        var datasets = new List<Case>();
-    //        foreach (DataRow row in dataTable.Rows)
-    //        {
-    //            datasets.Add(new Case(Convert.ToDouble(row[0]), row[2].ToString(), Convert.ToDouble(row[3])));
-    //            sb.AppendFormat("{0}\t{1}\t{2}\t{3}", row[0], row[1], row[2], row[3]);
-    //            sb.AppendLine();
-    //        }
-
-    //        Console.WriteLine(sb.ToString());
-    //        return datasets;
-    //    }
-    //}
     public class Case
     {
         public string Month { get; set; }
