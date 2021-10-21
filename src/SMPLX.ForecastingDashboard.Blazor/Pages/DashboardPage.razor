@@ -57,6 +57,8 @@
         </TabPanel>
         <TabPanel Name="heatmap">
             <Card>
+                <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
+                <DateRangePicker MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
                 <div id="hmap" style="height:650px;"></div>
             </Card>
         </TabPanel>
@@ -88,6 +90,26 @@
     LineChart<double> lineChart_modal;
     LineChart<double> lineChart2;
 
+    DateTime OldestRecordDate;
+    DateRange HeatmapDateRange;
+
+    Dictionary<string, DateRange> DateRanges => new Dictionary<string, DateRange>
+    {
+        {
+            "Whole History", new DateRange
+            {
+                Start = HeatmapDateRange.Start,
+                End =HeatmapDateRange.End
+            }
+        },
+    };
+
+    protected override void OnInitialized()
+    {
+        OldestRecordDate = new DateTime(1950, 1, 1);
+        HeatmapDateRange = new DateRange { Start = OldestRecordDate, End = DateTime.Now };
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -108,27 +130,35 @@
         }
     }
 
-    private async Task DrawMap()
+    private async Task DrawMap(DateRange dr = null)
     {
         IsMapLoading = true;
         var geoOptions = GeoOptions.Value;
         var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(geoOptions.Barangays);
         var casesresult = await CaseAppService.GetListAsync(new CaseGetListDto());
-        var cases = casesresult.Items.GroupBy(_ => _.Barangay).Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
+        OldestRecordDate = casesresult.Items.Min(_ => _.DateRegistered);
+        if (dr == null)
+        {
+            HeatmapDateRange = new DateRange { End = DateTimeOffset.Now, Start = OldestRecordDate };
+            dr = HeatmapDateRange;
+        }
+        var cases = casesresult.Items.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
+            .GroupBy(_ => _.Barangay)
+            .Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
 
         heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
         await JS.InvokeVoidAsync("initMap", heatData);
         IsMapLoading = false;
     }
 
+    private async Task OnHeatmapRangeSelect(DateRange dr)
+    {
+        await DrawMap(dr);
+    }
+
+
     private string Flatten(string s) => s.ToLower().Replace(" ", "");
     private bool FlatMatch(string a, string b) => Flatten(a).StartsWith(Flatten(b));
-
-    public double GetRandomNumber(double minimum, double maximum)
-    {
-        Random random = new Random();
-        return random.NextDouble() * (maximum - minimum) + minimum;
-    }
 
     async Task HandleRedraw()
     {
