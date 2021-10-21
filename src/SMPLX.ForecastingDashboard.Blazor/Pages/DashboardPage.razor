@@ -14,7 +14,6 @@
 @inject ICaseAppService CaseAppService
 
 <h3>@L["DataDasbhoard"]</h3>
-<RadzenProgressBar class="mt-2 mb-2" Visible="@IsMapLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
 <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
     <Items>
         <Tab Name="charts">@L["AnalysisCharts"]</Tab>
@@ -65,6 +64,9 @@
                         <DateRangePicker MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
                     </Column>
                 </Row>
+                <RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading"
+                                   Style="height: 10px;border-radius: 0;"
+                                   Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
                 <div id="hmap" style="height:650px;"></div>
             </Card>
         </TabPanel>
@@ -150,12 +152,20 @@
         {
             dr = new DateRange { End = DateTimeOffset.Now, Start = OldestRecordDate };
         }
+        if (Cases == null || Cases.Count < 1) return;
         var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
             .GroupBy(_ => _.Barangay)
             .Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
 
         heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
-        await JS.InvokeVoidAsync("initMap", heatData);
+        try
+        {
+            await JS.InvokeVoidAsync("initMap", heatData);
+        }
+        catch (Exception ex)
+        {
+            HandleErrorAsync(ex);
+        }
         IsMapLoading = false;
     }
 

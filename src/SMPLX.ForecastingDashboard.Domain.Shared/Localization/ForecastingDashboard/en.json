@@ -10,7 +10,7 @@
     "Permission:Case.Edit": "Update a case",
     "Permission:Case.Delete": "Delete a case",
     "Welcome": "Welcome",
-    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
+    "LongWelcomeMessage": "This is a capstone project dedicated for Banaybanay, Davao Oriental. This aims to show graphical information for forecasting and heatmap related to tuberculosis cases in Banaybanay",
     "ImportFormatWarningMessage": "Please make sure that the columns of your csv or excel file has the following format like the table below:",
     "FormatNote": "To avoid exceptions please make sure that every column follows this formats:",
     "DateNote": "Date or Date of Registration column should be formatted into Date (format: DD MM YYYY).",

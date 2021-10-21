@@ -6,7 +6,7 @@
 <div class="container">
     <div class="p-5 text-center">
         <Badge Color="Color.Success" class="mb-4">
-            <h5 class="m-1"> <i class="fas fa-rocket"></i> Congratulations, <strong>ForecastingDashboard</strong> is successfully running!</h5>
+            <h5 class="m-1"> <i class="fas fa-rocket"></i>This <strong>Heatmap & Forecasting Dashboard</strong> is a thesis study project!</h5>
         </Badge>
 
         <h1>Welcome to the Application</h1>
@@ -19,34 +19,5 @@
                 <i class="fa fa-sign-in"></i> @L["Login"]
             </a>
         }
-        <p>Date Range Test:</p>
-        <DateRangePicker OnRangeSelect="OnRangeSelect" Ranges="DateRanges"/>
-        <ul>
-            @foreach (var i in eventList)
-            {
-                <li>@i</li>
-            }
-        </ul>
     </div>
 </div>
-
-@code
-{
-    List<string> eventList = new List<string>();
-
-    Dictionary<string, DateRange> DateRanges => new Dictionary<string, DateRange>
-    {
-        {
-            "Whole History", new DateRange
-            {
-                Start = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1),
-                End = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddTicks(-1)
-            }
-        },
-    };
-
-    private void OnRangeSelect(DateRange dr)
-    {
-        eventList.Add($"{dr.Start.Date.ToShortDateString()}-{dr.End.Date.ToShortDateString()}");
-    }
-}
