@@ -297,7 +297,8 @@
                     {
     // caseDto.DateRegistered = DateTime.FromOADate(Int64.Parse(.Value.ToString()));
                         var dmy = worksheet.Cells[i, dateRegIndex].Text.Split("/").Select(_ => Int32.Parse(_)).ToArray();
-                        caseDto.DateRegistered = new DateTime(dmy[2], dmy[0], dmy[1]); //DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //(Int64.Parse(worksheet.Cells[i, dateRegIndex].Value.ToString()));
+                       // caseDto.DateRegistered = new DateTime(dmy[2], dmy[0], dmy[1]); //DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //(Int64.Parse(worksheet.Cells[i, dateRegIndex].Value.ToString()));
+                        caseDto.DateRegistered = DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture);
                     }
                     if (ageIndex >= 0 && worksheet.Cells[i, ageIndex].Value != null)
                     {
