@@ -2,12 +2,12 @@
 @using Blazorise.Charts
 @using System.Globalization
 @using SMPLX.ForecastingDashboard.Helpers
-@using Microsoft.Extensions.Localization
 @using Microsoft.Extensions.Options
+@using SMPLX.ForecastingDashboard.Blazor.ViewModels
 @using SMPLX.ForecastingDashboard.Cases
 @using SMPLX.ForecastingDashboard.ForecastData
 @using SMPLX.ForecastingDashboard.Settings
-@inherits SMPLX.ForecastingDashboard.Blazor.ViewModels.DashboardViewModel
+@inherits DashboardViewModel
 
 @inject IJSRuntime JS
 @inject IOptions<GeologicalOptions> GeoOptions
@@ -21,35 +21,93 @@
     </Items>
     <Content>
         <TabPanel Name="charts">
-            <Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
+            <div class="row g-3">
+                <div class="col-sm-2">
+                    <Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
+                </div>
+                <div class="col-sm-2">
+                    <Button Clicked="@(async () => await HandleChartDraw())">Refresh Chart</Button>
+                </div>
+                <div class="col-sm-2">
+                    <DateRangePicker @ref="chartsDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnChartsRangeSelect" Ranges="DateRanges"/>
+                </div>
+            </div>
             @*
             <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
             <Row Gutter="(20,20)">
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Card Class="p-2">
-                        <Row Class="justify-content-between">
-                            <Column ColumnSize="ColumnSize.IsAuto">
-                                <h5>
-                                    @L["LinearTrendForecast"]
-                                </h5>
-                            </Column>
-                            <Column ColumnSize="ColumnSize.IsAuto">
-                                <Tooltip Text="@L["Expand"]">
-                                    <Button Clicked="@(async () => await ShowLFModal())">
-                                        <i class="fas fa-expand"></i>
-                                    </Button>
-                                </Tooltip>
-                            </Column>
-                        </Row>
-                        <LineChart @ref="lineChart" TItem="double"/>
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <Row Class="justify-content-between">
+                                <Column ColumnSize="ColumnSize.IsAuto">
+                                    <b>
+                                        @LinearRegressionChartTitle
+                                    </b>
+                                </Column>
+                                <Column ColumnSize="ColumnSize.IsAuto">
+                                    <Tooltip Text="@L["Expand"]">
+                                        <Button Clicked="@(async () => await ShowLFModal())">
+                                            <i class="fas fa-expand"></i>
+                                        </Button>
+                                    </Tooltip>
+                                </Column>
+                            </Row>
+                        </CardHeader>
+                        <LineChart @ref="LinearRegressionChart" TItem="double"/>
                     </Card>
                 </Column>
-                <Column ColumnSize="ColumnSize.Is6">
-                    <Card Class="p-2">
-                        <h5>
-                            @L["SeasonalTrendForecast"]
-                        </h5>
-                        <LineChart @ref="lineChart2" TItem="double"/>
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <b>
+                                @SeasonalTrendChartTitle
+                            </b>
+                        </CardHeader>
+                        <LineChart @ref="SeasonalTrendChart" TItem="double"/>
+                    </Card>
+                </Column>
+            </Row>
+            <Row Gutter="(20,20)">
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <b>@L["BarangayCaseChart"]</b>
+                        </CardHeader>
+                        <CardBody>
+                            <PieChart TItem="double"></PieChart>
+                        </CardBody>
+                    </Card>
+                </Column>
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <b>@L["GenderChart"]</b>
+                        </CardHeader>
+                        <CardBody>
+                            <PieChart TItem="double"></PieChart>
+                        </CardBody>
+                    </Card>
+                </Column>
+            </Row>
+            <Row Gutter="(20,20)">
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <b>@L["AgeChart"]</b>
+                        </CardHeader>
+                        <CardBody>
+                            <BarChart TItem="double"></BarChart>
+                        </CardBody>
+                    </Card>
+                </Column>
+                <Column Class="col-lg-6">
+                    <Card>
+                        <CardHeader>
+                            <b>@L["LifeStatusChart"]</b>
+                        </CardHeader>
+                        <CardBody>
+                            <BarChart TItem="double"></BarChart>
+                        </CardBody>
                     </Card>
                 </Column>
             </Row>
@@ -91,13 +149,19 @@
 </Modal>
 
 @code {
-    string selectedTab = "heatmap";
+    string selectedTab = "charts";
     bool IsMapLoading;
     Modal LinearForecastModal;
     DateRangePicker heatmapDateRangePicker;
-    LineChart<double> lineChart;
+    DateRangePicker chartsDateRangePicker;
+    // LineChart<double> lineChart;
     LineChart<double> lineChart_modal;
-    LineChart<double> lineChart2;
+    // LineChart<double> lineChart2;
+
+    LineChart<double> LinearRegressionChart;
+    string LinearRegressionChartTitle;
+    LineChart<double> SeasonalTrendChart;
+    string SeasonalTrendChartTitle;
 
     Dictionary<string, DateRange> DateRanges => new()
     {
@@ -115,6 +179,10 @@
         if (firstRender)
         {
             await DrawHeatMap();
+            await HandleChartDraw();
+    // await DrawLinearRegressionChart();
+    // await DrawSeasonalityTrendChart();
+    // await HandleRedraw();
         }
     }
 
@@ -124,12 +192,12 @@
         var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
         if (dr == null)
         {
-            dr = new DateRange { End = DateTimeOffset.Now, Start = OldestRecordDate };
+            dr = new DateRange {End = DateTimeOffset.Now, Start = OldestRecordDate};
         }
         if (Cases == null || Cases.Count < 1) return;
         var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
             .GroupBy(_ => _.Barangay)
-            .Select(_ => new LocationCasesDto { Name = _.First().Barangay, Count = _.Count() }).ToList();
+            .Select(_ => new LocationCasesDto {Name = _.First().Barangay, Count = _.Count()}).ToList();
 
         heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
         try
@@ -147,7 +215,13 @@
     {
         await DrawHeatMap(dr);
     }
-    
+
+    private async Task OnChartsRangeSelect(DateRange dr)
+    {
+        await DrawLinearRegressionChart(dr);
+        await DrawSeasonalityTrendChart(dr);
+    }
+
     private async Task OnSelectedTabChanged(string arg)
     {
         selectedTab = arg;
@@ -156,11 +230,61 @@
         }
     }
 
+    async Task DrawLinearRegressionChart(DateRange dr = null)
+    {
+        if (dr == null)
+        {
+            dr = new DateRange {End = OldestRecordDate.AddYears(1), Start = OldestRecordDate};
+        }
+        var accumulated = await GetAccumulatedCasesAsync(dr, RangeStep.Monthly);
+        var linear = await GetLinearTrendAsync(dr, RangeStep.Monthly);
+        LinearRegressionChartTitle = $"Linear Trend Forecast ({DateRangeToString(dr)})";
+        await LinearRegressionChart.Clear();
+        await LinearRegressionChart.AddLabelsDatasetsAndUpdate(accumulated.Labels, accumulated.Datasets);
+        await LinearRegressionChart.AddDatasetsAndUpdate(linear.Datasets);
+    }
+
+    async Task DrawSeasonalityTrendChart(DateRange dr = null)
+    {
+        if (dr == null)
+        {
+            dr = new DateRange {End = OldestRecordDate.AddYears(1), Start = OldestRecordDate};
+        }
+        var accumulated = await GetAccumulatedCasesAsync(dr, RangeStep.Monthly);
+        var seasonality = await GetSeasonalityTrendAsync(dr, RangeStep.Monthly);
+
+    // SeasonalTrendChart.Options = new LineChartOptions
+    // {
+    //     Responsive = true,
+    //     MaintainAspectRatio = false,
+    //     Animation = new Animation(){Duration = 0},
+    //     ResponsiveAnimationDuration = 0
+    // };
+        SeasonalTrendChartTitle = $"Linear Trend Forecast ({DateRangeToString(dr)})";
+        await SeasonalTrendChart.Clear();
+
+        await SeasonalTrendChart.AddLabelsDatasetsAndUpdate(accumulated.Labels, accumulated.Datasets);
+    // await SeasonalTrendChart.Update();
+        await SeasonalTrendChart.AddDatasetsAndUpdate(seasonality.Datasets);
+    // await SeasonalTrendChart.Update();
+    }
+
+    string DateRangeToString(DateRange dr)
+    {
+        return dr.Start.Date.ToShortDateString() + " - " + dr.End.Date.ToShortDateString();
+    }
+
+    async Task HandleChartDraw()
+    {
+        await DrawLinearRegressionChart();
+        await DrawSeasonalityTrendChart();
+    }
+
     async Task HandleRedraw()
     {
-        await lineChart.Clear();
+        await LinearRegressionChart.Clear();
         await lineChart_modal.Clear();
-        await lineChart2.Clear();
+        await SeasonalTrendChart.Clear();
 
         var months = Enumerable.Range(1, 12).Select(i => DateTimeFormatInfo.CurrentInfo.GetMonthName(i)).ToArray();
         var datasets = new List<Case>
@@ -206,9 +330,9 @@
         }).ToList();
         var labels = datasets.Select(_ => _.Month.Substring(0, 3) + " " + _.Year).ToArray();
         var accumulatedDatasets = GetAccumulatedDataset(datasets.Select(_ => _.TotalCases).ToList());
-        await lineChart.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
+        await LinearRegressionChart.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
         await lineChart_modal.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
-        await lineChart2.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
+        await SeasonalTrendChart.AddLabelsDatasetsAndUpdate(labels, accumulatedDatasets);
 
         var nextYearMonths = months.Select(_ => _.Substring(0, 3) + " " + 2021).ToArray();
         var latestPeriod = datasets.Count;
@@ -222,12 +346,12 @@
             ltfs.Add(ltf);
             sfts.Add(sindex[month] * ltf);
         }
-        await lineChart.AddLabels(nextYearMonths);
-        await lineChart2.AddLabels(nextYearMonths);
+        await LinearRegressionChart.AddLabels(nextYearMonths);
+        await SeasonalTrendChart.AddLabels(nextYearMonths);
         await lineChart_modal.AddLabels(nextYearMonths);
-        await lineChart.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
+        await LinearRegressionChart.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
         await lineChart_modal.AddDatasetsAndUpdate(GetLinearForecastDataset(stltf.Select(_ => _.Item1).Concat(ltfs).ToList()));
-        await lineChart2.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
+        await SeasonalTrendChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Select(_ => _.Item2).Concat(sfts).ToList()));
 
     // await lineChart.AddDatasetsAndUpdate(GetSeasonalForecastDataset(stltf.Count,sfts.ToList());
     // await lineChart.AddData(4,sfts.ToArray());
@@ -258,7 +382,7 @@
             Fill = true,
             PointRadius = 2,
             PointBackgroundColor = borderColors[1],
-            BorderDash = new List<int> { 5, 2 }
+            BorderDash = new List<int> {5, 2}
         };
     }
 
@@ -279,9 +403,9 @@
     }
 
     bool interpolationEnabled = true;
-    List<string> backgroundColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 0.2f), ChartColor.FromRgba(140, 94, 255, 0.0f), ChartColor.FromRgba(75, 192, 192, 0.0f) };
-    List<string> borderColors = new List<string> { ChartColor.FromRgba(40, 142, 202, 1f), ChartColor.FromRgba(140, 94, 255, 1f), ChartColor.FromRgba(75, 192, 192, 1f) };
-    string[] Labels = { "Red", "Blue", "Yellow", "Green", "Purple", "Orange" };
+    List<string> backgroundColors = new List<string> {ChartColor.FromRgba(40, 142, 202, 0.2f), ChartColor.FromRgba(140, 94, 255, 0.0f), ChartColor.FromRgba(75, 192, 192, 0.0f)};
+    List<string> borderColors = new List<string> {ChartColor.FromRgba(40, 142, 202, 1f), ChartColor.FromRgba(140, 94, 255, 1f), ChartColor.FromRgba(75, 192, 192, 1f)};
+    string[] Labels = {"Red", "Blue", "Yellow", "Green", "Purple", "Orange"};
 
 
     private async Task ShowLFModal()

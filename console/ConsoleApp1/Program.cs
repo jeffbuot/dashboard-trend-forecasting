@@ -21,12 +21,17 @@ namespace ConsoleApp1
             Period = period;
         }
     }
-	public class Test{
-		public string Name {get;set;}
-		public int Val {get;set;}
-		public override string ToString(){
-		return String.Format("Name: {0}, Val: {1}",Name,Val);
-		}
+
+    public class Test
+    {
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+        public int Val { get; set; }
+
+        public override string ToString()
+        {
+            return String.Format("Name: {0}, Val: {1}", Name, Val);
+        }
 
         public class GroupedTest
         {
@@ -34,25 +39,31 @@ namespace ConsoleApp1
             public int Count { get; set; }
         }
     }
+
     class Program
     {
         static void Main(string[] args)
-        {	
-        var list1 = new List<Test>(){
-         		new Test{Name="A1",Val = 1},
-         		new Test{Name="A1",Val = 4},
-         		new Test{Name="B1",Val = 2},
-         		new Test{Name="B1",Val = 3},
-         		new Test{Name="A1",Val = 1}
-         		};
-        var x =list1.GroupBy(_ => _.Name).Select(_ => new Test.GroupedTest(){Name = _.First().Name,Count = _.Count()}).ToList();
-        Console.WriteLine(x);
-            
-        var list = new List<Case> { new Case(1,"",1), new Case(1,"",1), new Case(1,"",1)};
+        {
+            var list1 = new List<Test>()
+            {
+                new Test { Name = "A1", Val = 1 ,Date = DateTime.Now.AddDays(-1)},
+                new Test { Name = "B1", Val = 3 ,Date = DateTime.Now.AddDays(-4)},
+                new Test { Name = "A1", Val = 4 ,Date = DateTime.Now.AddDays(-2)},
+                new Test { Name = "A1", Val = 1 ,Date = DateTime.Now.AddYears(-10)},
+                new Test { Name = "B1", Val = 2 ,Date = DateTime.Now.AddDays(-3)}
+            };
+            var sortedDate = list1.OrderBy(_ => _.Date);
+            var xx = Enumerable.Range(1,12);
+            Console.WriteLine(xx);
+            Console.WriteLine(sortedDate);
+            var x = list1.GroupBy(_ => _.Name)
+                .Select(_ => new Test.GroupedTest() { Name = _.First().Name, Count = _.Count() }).ToList();
+            Console.WriteLine(x);
+
+            var list = new List<Case> { new Case(1, "", 1), new Case(1, "", 1), new Case(1, "", 1) };
             foreach (var l in list)
             {
                 l.Period = 2;
-
             }
 
             Console.WriteLine(list);
@@ -125,6 +136,7 @@ namespace ConsoleApp1
         }
 
         #region Old
+
 //         static int TrendProjectionForecast(double[] casesPerPeriod, int forecastPeriod)
 //         {
 //             // variables are named from our formula
@@ -172,6 +184,7 @@ namespace ConsoleApp1
 //             for (; n > 0; n--) sum += n * n;
 //             return sum;
 //         }
+
         #endregion
     }
 
@@ -192,7 +205,7 @@ namespace ConsoleApp1
                 ColumnHeaders = true,
                 StartRow = 0,
                 NumberOfColumns = 4,
-                NumberOfRows = worksheet.Rows.Count ,
+                NumberOfRows = worksheet.Rows.Count,
                 Resolution = ColumnTypeResolution.AutoPreferStringCurrentCulture
             });
             var sb = new StringBuilder();

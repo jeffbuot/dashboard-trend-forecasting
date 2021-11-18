@@ -13,6 +13,7 @@ namespace SMPLX.ForecastingDashboard.Cases
         public Gender Gender { get; set; }
         public string Barangay { get; set; }
         public LifeStatus LifeStatus { get; set; }
+        public double Period { get; set; }
     }
 
     public class CaseGetListDto : ListResultDto<CaseDto>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SMPLX.ForecastingDashboard.Permissions;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
@@ -17,6 +18,28 @@ namespace SMPLX.ForecastingDashboard.Cases
             DeletePolicyName = ForecastingDashboardPermissions.Case.Delete;
         }
 
+        // public override async Task<PagedResultDto<CaseDto>> GetListAsync(CaseGetListDto input)
+        // {
+        //     await CheckGetListPolicyAsync();
+        //
+        //     var query = await CreateFilteredQueryAsync(input);
+        //
+        //     var totalCount = await AsyncExecuter.CountAsync(query);
+        //
+        //     query = ApplySorting(query, input);
+        //     query = ApplyPaging(query, input);
+        //
+        //     var entities = await AsyncExecuter.ToListAsync(query);
+        //     var entityDtos = await MapToGetListOutputDtosAsync(entities);
+        //     double i = 1;
+        //     var res = entityDtos.OrderBy(_ => _.DateRegistered).ToList();
+        //     res.ForEach(_ => _.Period = i++);
+        //     return new PagedResultDto<CaseDto>(
+        //         totalCount,
+        //         res
+        //     );
+        // }
+
         public async Task<IEnumerable<CaseDto>> CreateManyAsync(IEnumerable<CaseInputDto> cases)
         {
             await CheckCreatePolicyAsync();
@@ -30,7 +53,7 @@ namespace SMPLX.ForecastingDashboard.Cases
             }
 
             await Repository.InsertManyAsync(entities, true);
-            
+
             return await MapToGetListOutputDtosAsync(entities);
         }
     }
