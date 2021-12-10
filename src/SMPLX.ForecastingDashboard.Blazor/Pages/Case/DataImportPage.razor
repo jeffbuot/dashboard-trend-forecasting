@@ -295,10 +295,11 @@
                     }
                     if (dateRegIndex >= 0 && worksheet.Cells[i, dateRegIndex].Value != null)
                     {
-    // caseDto.DateRegistered = DateTime.FromOADate(Int64.Parse(.Value.ToString()));
+                        // caseDto.DateRegistered = DateTime.FromOADate(Int64.Parse(.Value.ToString()));
                         var dmy = worksheet.Cells[i, dateRegIndex].Text.Split("/").Select(_ => Int32.Parse(_)).ToArray();
-                        caseDto.DateRegistered = DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //new DateTime(dmy[2], dmy[0], dmy[1]); 
-    //DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //(Int64.Parse(worksheet.Cells[i, dateRegIndex].Value.ToString()));
+                        var dateString = GetCorrectDateString(dmy);
+                        caseDto.DateRegistered = DateTime.ParseExact(dateString, "dd/MM/yyyy", CultureInfo.InvariantCulture); //new DateTime(dmy[2], dmy[0], dmy[1]); 
+                                                                                                                                                         //DateTime.ParseExact(worksheet.Cells[i, dateRegIndex].Text, "dd/MM/yyyy", CultureInfo.InvariantCulture); //(Int64.Parse(worksheet.Cells[i, dateRegIndex].Value.ToString()));
                     }
                     if (ageIndex >= 0 && worksheet.Cells[i, ageIndex].Value != null)
                     {
@@ -326,6 +327,11 @@
         }
         return result;
     }
+    private string GetCorrectDateString(int[] i)
+    {
+        return $"{GetDualDigit(i[1])}/{GetDualDigit(i[0])}/{i[2]}";
+    }
+    private string GetDualDigit(int i) => i < 10 ? "0" + i : i+"";
 
     private int FindIndexByName(string[] nsearch, ExcelRange range, int endColumn, int row = 1)
     {
