@@ -3,21 +3,27 @@
 @inherits ForecastingDashboardComponentBase
 @inject ICurrentTenant CurrentTenant
 @inject AuthenticationStateProvider AuthenticationStateProvider
+
 <div class="container">
-    <div class="p-5 text-center">
-        <Badge Color="Color.Success" class="mb-4">
-            <h5 class="m-1"> <i class="fas fa-rocket"></i>This <strong>Heatmap & Forecasting Dashboard</strong> is a thesis study project!</h5>
-        </Badge>
 
-        <h1>Welcome to the Application</h1>
+    <div class="landing-wrap">
+        <div class="p-5 text-center">
+            <div class="row">
+                <div class="col-lg-7">
+                    <h1>Welcome to the Banay-banay forecasting</h1>
+                    <p class="lead px-lg-5 mx-lg-5">@L["LongWelcomeMessage"]</p>
 
-        <p class="lead px-lg-5 mx-lg-5">@L["LongWelcomeMessage"]</p>
-
-        @if (!CurrentUser.IsAuthenticated)
-        {
-            <a class="btn btn-primary" href="/Account/Login">
-                <i class="fa fa-sign-in"></i> @L["Login"]
-            </a>
-        }
+                    @if (!CurrentUser.IsAuthenticated)
+                    {
+                        <a class="btn btn-primary" href="/Account/Login">
+                            <i class="fa fa-sign-in"></i> @L["Login"]
+                        </a>
+                    }
+                </div>
+                <div class="col-lg-5 mt-2">
+                    <img class="img-fluid" src="https://preview.colorlib.com/theme/unbrew/images/bg_1.svg"/>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

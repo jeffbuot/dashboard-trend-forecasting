@@ -1,0 +1,15 @@
+.landing-wrap {
+    padding: 20px;
+    color: white;
+    border-radius: 20px;
+    position: relative;
+    background: #553be6;
+    background: -moz-linear-gradient(45deg, #553be6 0%, #a87ffa 100%);
+    background: -webkit-linear-gradient(45deg, #553be6 0%, #a87ffa 100%);
+    background: -o-linear-gradient(45deg, #553be6 0%, #a87ffa 100%);
+    background: -ms-linear-gradient(45deg, #553be6 0%, #a87ffa 100%);
+    background: linear-gradient(45deg, #553be6 0%, #a87ffa 100%);
+}
+.landing-img-1{
+    margin-left: -20px;
+}
