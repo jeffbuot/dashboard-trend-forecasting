@@ -88,7 +88,7 @@ namespace SMPLX.ForecastingDashboard.Blazor.ViewModels
                 PointBackgroundColor = ChartColors.AccumulatedBorder,
             };
             return new ChartData<LineChartDataset<double>>
-                { Labels = dateFilteredSets.Select(_ => _.Label).ToArray(), Datasets = lcDataset };
+                {Labels = dateFilteredSets.Select(_ => _.Label).ToArray(), Datasets = lcDataset};
         }
 
         protected async Task<ChartData<LineChartDataset<double>>> GetLinearTrendAsync(DateRange dr, RangeStep rs)
@@ -125,7 +125,7 @@ namespace SMPLX.ForecastingDashboard.Blazor.ViewModels
         }
 
         protected async Task<ChartData<LineChartDataset<double>>> GetSeasonalityTrendAsync(DateRange dr, RangeStep rs)
-        {          
+        {
             var dateFilteredSets = monthlyForecast.Where(_ =>
             {
                 //TODO: set datetime to MonthlyCaseDto later
@@ -157,11 +157,23 @@ namespace SMPLX.ForecastingDashboard.Blazor.ViewModels
             return new ChartData<LineChartDataset<double>>();
         }
 
-        // protected async Task<ChartData> GetPerBarangayCases(DateRange dr, RangeStep rs)
-        // {
-        //     return new ChartData();
-        // }
-        //
+        protected async Task<ChartData<PieChartDataset<int>>> GetGenderChartData(DateRange dr, RangeStep rs)
+        {
+            return new ChartData<PieChartDataset<int>>
+            {
+                Labels = new[] {"Male", "Female"},
+                Datasets = new PieChartDataset<int>()
+                {
+                    Data = new int[] {10, 4}.ToList(),
+                    Label = L["GenderCount"],
+                    BackgroundColor = new[] {ChartColors.SeasonalBorder, ChartColors.LinearBorder},
+                    BorderColor = ChartColors.SeasonalBorder,
+                    HoverBackgroundColor = new[] {ChartColors.SeasonalBorder, ChartColors.LinearBorder},
+                    HoverBorderColor = new[] {ChartColors.SeasonalBorder, ChartColors.LinearBorder},
+                }
+            };
+        }
+
         // protected async Task<ChartData> GetLifeStatusChartData(DateRange dr, RangeStep rs)
         // {
         //     return new ChartData();
