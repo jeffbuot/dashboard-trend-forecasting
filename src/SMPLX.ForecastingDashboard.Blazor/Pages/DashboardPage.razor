@@ -13,7 +13,6 @@
 @inject IOptions<GeologicalOptions> GeoOptions
 @inject ICaseAppService CaseAppService
 
-<h3>@L["DataDasbhoard"]</h3>
 <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
     <Items>
         <Tab Name="heatmap">@L["HeatMap"]</Tab>
@@ -21,20 +20,29 @@
     </Items>
     <Content>
         <TabPanel Name="charts">
-            <div class="row g-3">
-                <div class="col-sm-2">
-                    <Button Clicked="@(async () => await HandleRedraw())">Redraw</Button>
+            <div class="d-flex flex-row mt-2 mb-2 p-2 bg-dark">
+                <div class="mr-2">
+                    <Button Color="Color.Primary" Clicked="@(async () => await HandleChartDraw())">
+                        <Icon Name="IconName.SyncAlt"/> Refresh Chart
+                    </Button>
                 </div>
-                <div class="col-sm-2">
-                    <Button Clicked="@(async () => await HandleChartDraw())">Refresh Chart</Button>
-                </div>
-                <div class="col-sm-2">
-                    <DateRangePicker @ref="chartsDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnChartsRangeSelect" Ranges="DateRanges"/>
+                <div class="mr-2">
+                    <div class="row align-middle">
+                        <div class="col-sm-auto">
+                            <Label TextColor="TextColor.Light">Range: </Label>
+                        </div>
+                        <div class="col-sm-auto">
+                            <DateRangePicker class="" @ref="chartsDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnChartsRangeSelect" Ranges="DateRanges"/>
+                        </div>
+                    </div>
                 </div>
             </div>
             @*
             <Button Clicked="@(async () => await HandleNextYearForecast())">Forecast Next Year</Button>*@
             <Row Gutter="(20,20)">
+                <Column class="col-lg-12 text-center">
+                    <h2>@L["DashboardTitle"]</h2>
+                </Column>
                 <Column Class="col-lg-6">
                     <Card>
                         <CardHeader>
@@ -84,7 +92,7 @@
                             <b>@L["GenderChart"]</b>
                         </CardHeader>
                         <CardBody>
-                            <PieChart TItem="double"></PieChart>
+                            <PieChart @ref="GenderChart" TItem="int"></PieChart>
                         </CardBody>
                     </Card>
                 </Column>
@@ -156,12 +164,13 @@
     DateRangePicker chartsDateRangePicker;
     // LineChart<double> lineChart;
     LineChart<double> lineChart_modal;
-    // LineChart<double> lineChart2;
+    DateRange chartDateRange;
 
     LineChart<double> LinearRegressionChart;
     string LinearRegressionChartTitle;
     LineChart<double> SeasonalTrendChart;
     string SeasonalTrendChartTitle;
+    PieChart<int> GenderChart;
 
     Dictionary<string, DateRange> DateRanges => new()
     {
@@ -178,12 +187,12 @@
     {
         if (firstRender)
         {
-            await DrawHeatMap();
-            await HandleChartDraw();
     // await DrawLinearRegressionChart();
     // await DrawSeasonalityTrendChart();
     // await HandleRedraw();
         }
+        await DrawHeatMap();
+        await HandleChartDraw();
     }
 
     private async Task DrawHeatMap(DateRange dr = null)
@@ -220,6 +229,7 @@
     {
         await DrawLinearRegressionChart(dr);
         await DrawSeasonalityTrendChart(dr);
+        await DrawGenderChart(dr);
     }
 
     private async Task OnSelectedTabChanged(string arg)
@@ -269,6 +279,17 @@
     // await SeasonalTrendChart.Update();
     }
 
+    async Task DrawGenderChart(DateRange dr = null)
+    {
+        if (dr == null)
+        {
+            dr = new DateRange {End = OldestRecordDate.AddYears(1), Start = OldestRecordDate};
+        }
+        var gdata = await GetGenderChartData(dr, RangeStep.Monthly);
+        await GenderChart.Clear();
+        await GenderChart.AddLabelsDatasetsAndUpdate(new[] {"Male", "Female"},gdata.Datasets);
+    }
+
     string DateRangeToString(DateRange dr)
     {
         return dr.Start.Date.ToShortDateString() + " - " + dr.End.Date.ToShortDateString();
@@ -278,6 +299,7 @@
     {
         await DrawLinearRegressionChart();
         await DrawSeasonalityTrendChart();
+        await DrawGenderChart();
     }
 
     async Task HandleRedraw()
