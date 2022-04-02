@@ -21,8 +21,4 @@
     <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="4.4.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Charts" />
-  </ItemGroup>
-
 </Project>

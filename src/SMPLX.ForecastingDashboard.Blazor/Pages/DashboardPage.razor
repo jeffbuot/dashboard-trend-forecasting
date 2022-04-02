@@ -75,50 +75,50 @@
                     </Card>
                 </Column>
             </Row>
-            <Row Gutter="(20,20)">
-                <Column Class="col-lg-6">
-                    <Card>
-                        <CardHeader>
-                            <b>@L["BarangayCaseChart"]</b>
-                        </CardHeader>
-                        <CardBody>
-                            <PieChart TItem="double"></PieChart>
-                        </CardBody>
-                    </Card>
-                </Column>
-                <Column Class="col-lg-6">
-                    <Card>
-                        <CardHeader>
-                            <b>@L["GenderChart"]</b>
-                        </CardHeader>
-                        <CardBody>
-                            <PieChart @ref="GenderChart" TItem="int"></PieChart>
-                        </CardBody>
-                    </Card>
-                </Column>
-            </Row>
-            <Row Gutter="(20,20)">
-                <Column Class="col-lg-6">
-                    <Card>
-                        <CardHeader>
-                            <b>@L["AgeChart"]</b>
-                        </CardHeader>
-                        <CardBody>
-                            <BarChart TItem="double"></BarChart>
-                        </CardBody>
-                    </Card>
-                </Column>
-                <Column Class="col-lg-6">
-                    <Card>
-                        <CardHeader>
-                            <b>@L["LifeStatusChart"]</b>
-                        </CardHeader>
-                        <CardBody>
-                            <BarChart TItem="double"></BarChart>
-                        </CardBody>
-                    </Card>
-                </Column>
-            </Row>
+            @* <Row Gutter="(20,20)"> *@
+            @*     <Column Class="col-lg-6"> *@
+            @*         <Card> *@
+            @*             <CardHeader> *@
+            @*                 <b>@L["BarangayCaseChart"]</b> *@
+            @*             </CardHeader> *@
+            @*             <CardBody> *@
+            @*                 <PieChart TItem="double"></PieChart> *@
+            @*             </CardBody> *@
+            @*         </Card> *@
+            @*     </Column> *@
+            @*     <Column Class="col-lg-6"> *@
+            @*         <Card> *@
+            @*             <CardHeader> *@
+            @*                 <b>@L["GenderChart"]</b> *@
+            @*             </CardHeader> *@
+            @*             <CardBody> *@
+            @*                 <PieChart @ref="GenderChart" TItem="int"></PieChart> *@
+            @*             </CardBody> *@
+            @*         </Card> *@
+            @*     </Column> *@
+            @* </Row> *@
+            @* <Row Gutter="(20,20)"> *@
+            @*     <Column Class="col-lg-6"> *@
+            @*         <Card> *@
+            @*             <CardHeader> *@
+            @*                 <b>@L["AgeChart"]</b> *@
+            @*             </CardHeader> *@
+            @*             <CardBody> *@
+            @*                 <BarChart TItem="double"></BarChart> *@
+            @*             </CardBody> *@
+            @*         </Card> *@
+            @*     </Column> *@
+            @*     <Column Class="col-lg-6"> *@
+            @*         <Card> *@
+            @*             <CardHeader> *@
+            @*                 <b>@L["LifeStatusChart"]</b> *@
+            @*             </CardHeader> *@
+            @*             <CardBody> *@
+            @*                 <BarChart TItem="double"></BarChart> *@
+            @*             </CardBody> *@
+            @*         </Card> *@
+            @*     </Column> *@
+            @* </Row> *@
         </TabPanel>
         <TabPanel Name="heatmap">
             <Card>
@@ -170,7 +170,7 @@
     string LinearRegressionChartTitle;
     LineChart<double> SeasonalTrendChart;
     string SeasonalTrendChartTitle;
-    PieChart<int> GenderChart;
+    // PieChart<int> GenderChart;
 
     Dictionary<string, DateRange> DateRanges => new()
     {
@@ -229,7 +229,7 @@
     {
         await DrawLinearRegressionChart(dr);
         await DrawSeasonalityTrendChart(dr);
-        await DrawGenderChart(dr);
+        // await DrawGenderChart(dr);
     }
 
     private async Task OnSelectedTabChanged(string arg)
@@ -279,16 +279,16 @@
     // await SeasonalTrendChart.Update();
     }
 
-    async Task DrawGenderChart(DateRange dr = null)
-    {
-        if (dr == null)
-        {
-            dr = new DateRange {End = OldestRecordDate.AddYears(1), Start = OldestRecordDate};
-        }
-        var gdata = await GetGenderChartData(dr, RangeStep.Monthly);
-        await GenderChart.Clear();
-        await GenderChart.AddLabelsDatasetsAndUpdate(new[] {"Male", "Female"},gdata.Datasets);
-    }
+    // async Task DrawGenderChart(DateRange dr = null)
+    // {
+    //     if (dr == null)
+    //     {
+    //         dr = new DateRange {End = OldestRecordDate.AddYears(1), Start = OldestRecordDate};
+    //     }
+    //     var gdata = await GetGenderChartData(dr, RangeStep.Monthly);
+    //     await GenderChart.Clear();
+    //     await GenderChart.AddLabelsDatasetsAndUpdate(new[] {"Male", "Female"},gdata.Datasets);
+    // }
 
     string DateRangeToString(DateRange dr)
     {
@@ -299,7 +299,7 @@
     {
         await DrawLinearRegressionChart();
         await DrawSeasonalityTrendChart();
-        await DrawGenderChart();
+        // await DrawGenderChart();
     }
 
     async Task HandleRedraw()

@@ -5,4 +5,8 @@
         Dead,
         Alive
     }
+    public enum Wellness
+    {
+        Cured, NotCured
+    }
 }

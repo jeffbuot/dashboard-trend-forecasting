@@ -43,6 +43,7 @@
                 @L["DateNote"]
                 @L["GenderNote"]
                 @L["StatusNote"]
+                @L["CuredNote"]
                 @L["ImportFormatWarningMessage"]
                 <Card>
                     <CardBody>
@@ -54,24 +55,27 @@
                                     <TableHeaderCell>Age</TableHeaderCell>
                                     <TableHeaderCell>Gender</TableHeaderCell>
                                     <TableHeaderCell>Barangay</TableHeaderCell>
+                                    <TableHeaderCell>Result</TableHeaderCell>
                                     <TableHeaderCell>Status</TableHeaderCell>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 <TableRow>
                                     <TableRowHeader>1</TableRowHeader>
-                                    <TableRowCell>01 04 2021</TableRowCell>
+                                    <TableRowCell>1/4/2021</TableRowCell>
                                     <TableRowCell>55</TableRowCell>
                                     <TableRowCell>M</TableRowCell>
                                     <TableRowCell>POBLACION II</TableRowCell>
+                                    <TableRowCell>CURED</TableRowCell>
                                     <TableRowCell>1</TableRowCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableRowHeader>2</TableRowHeader>
-                                    <TableRowCell>12 25 2021</TableRowCell>
+                                    <TableRowCell>12/25/2021</TableRowCell>
                                     <TableRowCell>23</TableRowCell>
                                     <TableRowCell>F</TableRowCell>
                                     <TableRowCell>CAUSWAGAN</TableRowCell>
+                                    <TableRowCell>NOT CURED</TableRowCell>
                                     <TableRowCell>0</TableRowCell>
                                 </TableRow>
                             </TableBody>
@@ -174,6 +178,15 @@
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
+                <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="Wellness" Title="Wellness">
+                    <Template Context="context">
+                        @Enum.GetName(context.Wellness)
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenDropDown @bind-Value="context.Wellness" Data="@wellnessEnumerable" ValueProperty="Wellness" Style="width:100%">
+                        </RadzenDropDown>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
 
                 <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
                     <Template Context="casedto">
@@ -206,6 +219,7 @@
 {
     IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
     IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
+    IEnumerable<Wellness> wellnessEnumerable = Enum.GetValues(typeof(Wellness)).Cast<Wellness>();
     bool visible = true;
     bool HasCreatePermission;
     bool isLoading;
@@ -284,6 +298,7 @@
                 var genderIndex = FindIndexByName(new[] { nameof(CaseImportDto.Gender) }, worksheet.Cells, worksheet.Dimension.End.Column);
                 var barangayIndex = FindIndexByName(new[] { nameof(CaseImportDto.Barangay) }, worksheet.Cells, worksheet.Dimension.End.Column);
                 var statusIndex = FindIndexByName(new[] { nameof(CaseImportDto.LifeStatus), "status" }, worksheet.Cells, worksheet.Dimension.End.Column);
+                var wellnessIndex = FindIndexByName(new[] {nameof(CaseImportDto.Wellness), "result"}, worksheet.Cells, worksheet.Dimension.End.Column);
                 for (int i = worksheet.Dimension.Start.Row + 1; i <= worksheet.Dimension.End.Row; i++)
                 {
                     rowBeforeException = i;
@@ -316,6 +331,10 @@
                     if (statusIndex >= 0 && worksheet.Cells[i, statusIndex].Value != null)
                     {
                         caseDto.LifeStatus = Int32.Parse(worksheet.Cells[i, statusIndex].Text) == 1 ? LifeStatus.Alive : LifeStatus.Dead;
+                    }
+                    if (wellnessIndex >= 0 && worksheet.Cells[i, wellnessIndex].Value != null)
+                    {
+                        caseDto.Wellness = String.Equals(worksheet.Cells[i, wellnessIndex].Text.ToLower(), Enum.GetName(Wellness.Cured).ToLower()) ? Wellness.Cured : Wellness.NotCured;
                     }
                     result.Add(caseDto);
                 }

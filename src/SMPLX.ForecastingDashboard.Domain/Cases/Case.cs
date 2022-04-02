@@ -12,6 +12,7 @@ namespace SMPLX.ForecastingDashboard.Cases
         public Gender Gender { get; set; }
         public int Age { get; set; }
         public LifeStatus LifeStatus { get; set; }
+        public Wellness Wellness { get; set; }
         public DateTime DateRegistered { get; set; }
     }
 }
