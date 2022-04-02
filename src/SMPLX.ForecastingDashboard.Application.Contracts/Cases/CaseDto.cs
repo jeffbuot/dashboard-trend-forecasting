@@ -27,6 +27,7 @@ namespace SMPLX.ForecastingDashboard.Cases
         public string Barangay { get; set; }
         public int Age { get; set; }
         public LifeStatus LifeStatus { get; set; }
+        public Wellness Wellness { get; set; }
         [Required] public DateTime DateRegistered { get; set; }
     }
 

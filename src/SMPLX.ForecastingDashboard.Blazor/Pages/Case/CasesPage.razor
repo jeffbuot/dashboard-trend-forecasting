@@ -110,6 +110,16 @@
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
+                
+                <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="Wellness" Title="Wellness">
+                    <Template Context="context">
+                        @Enum.GetName(context.Wellness)
+                    </Template>
+                    <EditTemplate Context="context">
+                        <RadzenDropDown @bind-Value="context.Wellness" Data="@wellnessEnumerable" ValueProperty="Wellness" Style="width:100%">
+                        </RadzenDropDown>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
                 @if (HasUpdatePermission)
                 {
                     <RadzenDataGridColumn TItem="CaseImportDto" Context="context" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="100px">
@@ -152,6 +162,7 @@
     RadzenDataGrid<CaseImportDto> CasesGrid;
     IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
     IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
+    IEnumerable<Wellness> wellnessEnumerable = Enum.GetValues(typeof(Wellness)).Cast<Wellness>();
     List<CaseImportDto> CasesDtoList;
     List<Location> SuggestedBarangays;
     List<Location> StaticSuggestedBarangays;
@@ -196,7 +207,8 @@
         {
             CaseId = CasesDtoList?.Count > 0 ? CasesDtoList.Max(_ => _.CaseId) + 1 : 1,
             DateRegistered = DateTime.Now,
-            LifeStatus = LifeStatus.Alive
+            LifeStatus = LifeStatus.Alive,
+            Wellness = Wellness.NotCured
         };
         CasesGrid.InsertRow(newCase);
     }

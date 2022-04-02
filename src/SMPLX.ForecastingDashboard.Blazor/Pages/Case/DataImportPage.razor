@@ -448,7 +448,8 @@
                 Id = GuidGenerator.Create(),
                 CaseId = importedCases?.Count > 0 ? importedCases.Max(_ => _.CaseId) + 1 : 1,
                 DateRegistered = DateTime.Now,
-                LifeStatus = LifeStatus.Alive
+                LifeStatus = LifeStatus.Alive,
+                Wellness = Wellness.NotCured
             });
         }
     }
