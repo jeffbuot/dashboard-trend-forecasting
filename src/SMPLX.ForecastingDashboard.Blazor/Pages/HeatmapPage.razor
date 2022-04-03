@@ -1,0 +1,58 @@
+@page "/Heatmap"
+@using SMPLX.ForecastingDashboard.Settings
+@using Microsoft.Extensions.Options
+@using SMPLX.ForecastingDashboard.Blazor.ViewModels
+@using SMPLX.ForecastingDashboard.ForecastData
+@inherits SMPLX.ForecastingDashboard.Blazor.ViewModels.HeatmapViewModel
+
+@inject IJSRuntime Js
+@inject IOptions<GeologicalOptions> GeoOptions
+
+<Row class="mt-2">
+    <Column ColumnSize="ColumnSize.IsAuto">
+        <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
+    </Column>
+    <Column ColumnSize="ColumnSize.IsAuto">
+        <DateRangePicker @ref="HeatmapDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
+    </Column>
+</Row>
+<RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading"
+                   Style="height: 10px;border-radius: 0;"
+                   Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+
+<div id="hmap" style="height:650px;"></div>
+
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await DrawHeatMap();
+    }
+
+    private async Task DrawHeatMap(DateRange dr = null)
+    {
+        IsMapLoading = true;
+        var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
+        dr ??= new DateRange {End = DateTimeOffset.Now, Start = OldestRecordDate};
+        if (Cases == null || !Cases.Any()){ return;}
+        var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
+            .GroupBy(_ => _.Barangay)
+            .Select(_ => new LocationCasesDto {Name = _.First().Barangay, Count = _.Count()}).ToList();
+
+        heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
+        try
+        {
+            await Js.InvokeVoidAsync("initMap", heatData);
+        }
+        catch (Exception ex)
+        {
+            await HandleErrorAsync(ex);
+        }
+        IsMapLoading = false;
+    }
+    
+    protected async Task OnHeatmapRangeSelect(DateRange dr)
+    {
+        await DrawHeatMap(dr);
+    }
+}

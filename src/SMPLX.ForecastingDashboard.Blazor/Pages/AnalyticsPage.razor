@@ -1,0 +1,70 @@
+@page "/Analytics"
+@using SMPLX.ForecastingDashboard.Cases
+@using SMPLX.ForecastingDashboard.Blazor.ViewModels
+@using System.Data
+@using SMPLX.ForecastingDashboard.ForecastData
+@inherits SMPLX.ForecastingDashboard.Blazor.ViewModels.AnalyticsViewModel
+
+<DxChart T="MonthlyCaseDto"
+         Data="@MonthlyCases"
+         Width="100%"
+         Height="500"
+         >
+    <DxChartLegend Position="RelativePosition.Inside"
+                   VerticalAlignment="VerticalEdge.Top"
+                   HorizontalAlignment="HorizontalAlignment.Right" />
+        
+    <DxChartLineSeries T="MonthlyCaseDto"
+                       TArgument="DateTime"
+                       TValue="double"
+                       Filter="c => !c.IsForecast"
+                       ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
+                       ValueField="i => i.Count"
+                       Name="Accumulated">
+        <DxChartSeriesPoint Visible="true"/>
+        <DxChartAggregationSettings Enabled="true"
+                                    Method="ChartAggregationMethod.Average"/>
+    </DxChartLineSeries>
+    <DxChartLineSeries T="MonthlyCaseDto"
+                       TArgument="DateTime"
+                       TValue="double"
+                       ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
+                       ValueField="i => i.LinearTrend"
+                       Name="Linear Regression">
+        <DxChartSeriesPoint Visible="false"/>
+        <DxChartAggregationSettings Enabled="true"
+                                    Method="ChartAggregationMethod.Average"/>
+    </DxChartLineSeries>
+        <DxChartLineSeries T="MonthlyCaseDto"
+                           TArgument="DateTime"
+                           TValue="double"
+                           Filter="c => c.IsForecast"
+                           ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
+                           ValueField="i => i.SeasonalityTrend"
+                           Name="Seasonal Trend Forecast">
+            <DxChartSeriesPoint Visible="true"/>
+            <DxChartAggregationSettings Enabled="true"
+                                        Method="ChartAggregationMethod.Average"/>
+        </DxChartLineSeries>
+    <DxChartArgumentAxis>
+        <DxChartAxisRange StartValue="StartDate"
+                          EndValue="EndDate" />
+    </DxChartArgumentAxis>
+    <DxChartZoomAndPanSettings ArgumentAxisZoomAndPanMode="ChartAxisZoomAndPanMode.Both" />
+    <DxChartScrollBarSettings ArgumentAxisScrollBarVisible="true"
+                              ArgumentAxisScrollBarPosition="ChartScrollBarPosition.Bottom" />
+    <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
+        <div style="margin: 0.75rem">
+            <div class="font-weight-bold">
+                @(((DateTime)context.Point.Argument).ToString("d"))
+            </div>
+            <div>
+                @(context.Point.Value) case(s)
+            </div>
+        </div>
+    </DxChartTooltip>
+</DxChart>
+
+@code {
+    
+}

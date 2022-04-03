@@ -1,0 +1,84 @@
+@page "/Scheduler"
+
+<DxChart T="BargainDataPoint"
+         Data="@UsdJpyData"
+         Width="100%">
+    <DxChartLegend Position="RelativePosition.Inside"
+                   VerticalAlignment="VerticalEdge.Top"
+                   HorizontalAlignment="HorizontalAlignment.Right" />
+        
+    <DxChartLineSeries T="BargainDataPoint"
+                       TArgument="DateTime"
+                       TValue="double"
+                           Filter="@(i => i.Name == "USD-JPY")"
+                       ArgumentField="i => i.DateTimeStamp"
+                       ValueField="i => i.Price"
+                       Name="USD-JPY">
+        <DxChartSeriesPoint Visible="false"/>
+        <DxChartAggregationSettings Enabled="true"
+                                    Method="ChartAggregationMethod.Average"/>
+    </DxChartLineSeries>
+      <DxChartLineSeries T="BargainDataPoint"
+                           TArgument="DateTime"
+                           TValue="double"
+                           Filter="@(i => i.Name == "USD-PHP")"
+                           ArgumentField="i => i.DateTimeStamp"
+                           ValueField="i => i.Price"
+                           Name="USD-PHP">
+            <DxChartSeriesPoint Visible="false"/>
+            <DxChartAggregationSettings Enabled="true"
+                                        Method="ChartAggregationMethod.Average"/>
+        </DxChartLineSeries>
+    <DxChartArgumentAxis>
+        <DxChartAxisRange StartValue="DateTime.Now"
+                          EndValue="DateTime.Now.AddDays(10)" />
+    </DxChartArgumentAxis>
+    <DxChartZoomAndPanSettings ArgumentAxisZoomAndPanMode="ChartAxisZoomAndPanMode.Both" />
+    <DxChartScrollBarSettings ArgumentAxisScrollBarVisible="true"
+                              ArgumentAxisScrollBarPosition="ChartScrollBarPosition.Bottom" />
+    <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
+        <div style="margin: 0.75rem">
+            <div class="font-weight-bold">
+                @(((DateTime)context.Point.Argument).ToString("d"))
+            </div>
+            <div>
+                1$=@(context.Point.Value)¥
+            </div>
+        </div>
+    </DxChartTooltip>
+</DxChart>
+
+@code {
+    IEnumerable<BargainDataPoint> UsdJpyData;
+    protected override async Task OnInitializedAsync()
+    {
+        var x = new List<BargainDataPoint>();
+        for (int i = 0; i < 200; i++)
+        {
+            x.Add(new BargainDataPoint("USD-JPY",DateTime.Now.AddHours(i), GetRandomNumber(1,20)));
+        }
+        for (int i = 0; i < 200; i++)
+        {
+            x.Add(new BargainDataPoint("USD-PHP",DateTime.Now.AddHours(i), GetRandomNumber(1,20)));
+        }
+        UsdJpyData = x;
+    }
+    private double GetRandomNumber(double minimum, double maximum)
+    { 
+        Random random = new Random();
+        return random.NextDouble() * (maximum - minimum) + minimum;
+    }
+    
+    public class BargainDataPoint {
+        public DateTime DateTimeStamp { get; }
+        public double Price { get; }
+        public string Name { get; }
+
+        public BargainDataPoint(string name,DateTime dateTimeStamp, double price)
+        {
+            DateTimeStamp = dateTimeStamp;
+            Price = price;
+            Name = name;
+        }
+    }
+}

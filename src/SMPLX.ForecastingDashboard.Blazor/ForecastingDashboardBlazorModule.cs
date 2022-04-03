@@ -97,6 +97,11 @@ namespace SMPLX.ForecastingDashboard.Blazor
             ConfigureMenu(context);
         }
 
+        private void ConfigureDevexpress(ServiceConfigurationContext context)
+        {
+            context.Services.AddDevExpressBlazor();
+        }
+
         private void ConfigureMultitenancy()
         {
             Configure<AbpMultiTenancyOptions>(options => options.IsEnabled = false);

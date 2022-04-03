@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 
 namespace SMPLX.ForecastingDashboard.ForecastData
@@ -20,19 +21,23 @@ namespace SMPLX.ForecastingDashboard.ForecastData
             }
         }
 
+        public bool IsForecast { get; set; }
+
         private string label;
         public double Count { get; }
 
         public double LinearTrend { get; set; }
         public double SeasonalityTrend { get; set; }
 
+        public DateTime GetDate() => new DateTime(Year, Month, 1);
 
-        public MonthlyCaseDto(double period, int year, int month, double count)
+        public MonthlyCaseDto(double period, int year, int month, double count, bool isForecast = false)
         {
             Period = period;
             Year = year;
             Month = month;
             Count = count;
+            IsForecast = isForecast;
         }
     }
 }

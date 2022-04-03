@@ -10,6 +10,7 @@
     "Permission:Case.Edit": "Update a case",
     "Permission:Case.Delete": "Delete a case",
     "Welcome": "Welcome",
+    "DashboardTitle": "Forecasting Dashboard",
     "LongWelcomeMessage": "This is a capstone project dedicated for Banaybanay, Davao Oriental. This aims to show graphical information for forecasting and heatmap related to tuberculosis cases in Banaybanay",
     "ImportFormatWarningMessage": "Please make sure that the columns of your csv or excel file has the following format like the table below:",
     "FormatNote": "To avoid exceptions please make sure that every column follows this formats:",
