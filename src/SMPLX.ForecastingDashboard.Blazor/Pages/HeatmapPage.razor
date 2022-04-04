@@ -43,12 +43,13 @@
         try
         {
             await Js.InvokeVoidAsync("initMap", heatData);
+            IsMapLoading = false;
         }
         catch (Exception ex)
         {
+            IsMapLoading = false;
             await HandleErrorAsync(ex);
         }
-        IsMapLoading = false;
     }
     
     protected async Task OnHeatmapRangeSelect(DateRange dr)

@@ -21,7 +21,9 @@
                        ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
                        ValueField="i => i.Count"
                        Name="Accumulated">
-        <DxChartSeriesPoint Visible="true"/>
+        @* <DxChartSeriesPoint Visible="true"/> *@
+           <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
+                                    Size="8" />
         <DxChartAggregationSettings Enabled="true"
                                     Method="ChartAggregationMethod.Average"/>
     </DxChartLineSeries>
@@ -42,7 +44,8 @@
                            ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
                            ValueField="i => i.SeasonalityTrend"
                            Name="Seasonal Trend Forecast">
-            <DxChartSeriesPoint Visible="true"/>
+           <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
+                                    Size="8" />
             <DxChartAggregationSettings Enabled="true"
                                         Method="ChartAggregationMethod.Average"/>
         </DxChartLineSeries>
@@ -54,7 +57,7 @@
     <DxChartScrollBarSettings ArgumentAxisScrollBarVisible="true"
                               ArgumentAxisScrollBarPosition="ChartScrollBarPosition.Bottom" />
     <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
-        <div style="margin: 0.75rem">
+        <div style="margin: 0.40rem">
             <div class="font-weight-bold">
                 @(((DateTime)context.Point.Argument).ToString("d"))
             </div>
