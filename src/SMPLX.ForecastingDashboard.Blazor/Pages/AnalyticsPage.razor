@@ -4,70 +4,100 @@
 @using System.Data
 @using SMPLX.ForecastingDashboard.ForecastData
 @inherits SMPLX.ForecastingDashboard.Blazor.ViewModels.AnalyticsViewModel
+<Card class="p-3">
+    <div class="text-center">
+        <h4>
+            @L["Analytics"]
+        </h4>
+    </div>
+    <DxChart T="MonthlyCaseDto"
+             Data="@MonthlyCases"
+             Width="100%"
+             Height="500">
+        <DxChartLegend Position="RelativePosition.Inside"
+                       VerticalAlignment="VerticalEdge.Top"
+                       HorizontalAlignment="HorizontalAlignment.Right"/>
 
-<DxChart T="MonthlyCaseDto"
-         Data="@MonthlyCases"
-         Width="100%"
-         Height="500"
-         >
-    <DxChartLegend Position="RelativePosition.Inside"
-                   VerticalAlignment="VerticalEdge.Top"
-                   HorizontalAlignment="HorizontalAlignment.Right" />
-        
-    <DxChartLineSeries T="MonthlyCaseDto"
-                       TArgument="DateTime"
-                       TValue="double"
-                       Filter="c => !c.IsForecast"
-                       ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
-                       ValueField="i => i.Count"
-                       Name="Accumulated">
-        @* <DxChartSeriesPoint Visible="true"/> *@
-           <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
-                                    Size="8" />
-        <DxChartAggregationSettings Enabled="true"
-                                    Method="ChartAggregationMethod.Auto"/>
-    </DxChartLineSeries>
-    <DxChartLineSeries T="MonthlyCaseDto"
-                       TArgument="DateTime"
-                       TValue="double"
-                       ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
-                       ValueField="i => i.LinearTrend"
-                       Name="Linear Regression">
-        <DxChartSeriesPoint Visible="false"/>
-        <DxChartAggregationSettings Enabled="true"
-                                    Method="ChartAggregationMethod.Auto"/>
-    </DxChartLineSeries>
         <DxChartLineSeries T="MonthlyCaseDto"
                            TArgument="DateTime"
                            TValue="double"
-                           Filter="c => c.IsForecast"
-                           ArgumentField="@(c=> new DateTime(c.Year,c.Month,1))"
-                           ValueField="i => i.SeasonalityTrend"
-                           Name="Seasonal Trend Forecast">
-           <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
-                                    Size="8" />
+                           Filter="c => !c.IsForecast"
+                           ArgumentField="@(c => new DateTime(c.Year, c.Month, 1))"
+                           ValueField="i => i.Count"
+                           Name="Accumulated">
+            @* <DxChartSeriesPoint Visible="true"/> *@
+            <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
+                                Size="8"/>
             <DxChartAggregationSettings Enabled="true"
                                         Method="ChartAggregationMethod.Auto"/>
         </DxChartLineSeries>
-    <DxChartArgumentAxis>
-        <DxChartAxisRange StartValue="StartDate"
-                          EndValue="EndDate" />
-    </DxChartArgumentAxis>
-    <DxChartZoomAndPanSettings ArgumentAxisZoomAndPanMode="ChartAxisZoomAndPanMode.Both" />
-    <DxChartScrollBarSettings ArgumentAxisScrollBarVisible="true"
-                              ArgumentAxisScrollBarPosition="ChartScrollBarPosition.Bottom" />
-    <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
-        <div style="margin: 0.40rem">
-            <div class="font-weight-bold">
-                @(((DateTime)context.Point.Argument).ToString("d"))
+        <DxChartLineSeries T="MonthlyCaseDto"
+                           TArgument="DateTime"
+                           TValue="double"
+                           ArgumentField="@(c => new DateTime(c.Year, c.Month, 1))"
+                           ValueField="i => i.LinearTrend"
+                           Name="Linear Regression">
+            <DxChartSeriesPoint Visible="false"/>
+            <DxChartAggregationSettings Enabled="true"
+                                        Method="ChartAggregationMethod.Auto"/>
+        </DxChartLineSeries>
+        <DxChartLineSeries T="MonthlyCaseDto"
+                           TArgument="DateTime"
+                           TValue="double"
+                           ArgumentField="@(c => new DateTime(c.Year, c.Month, 1))"
+                           ValueField="i => i.SeasonalityTrend"
+                           Name="Seasonal Trend Forecast">
+            <DxChartSeriesPoint Symbol="ChartPointSymbol.Circle"
+                                Size="8"/>
+            <DxChartAggregationSettings Enabled="true"
+                                        Method="ChartAggregationMethod.Auto"/>
+        </DxChartLineSeries>
+        <DxChartArgumentAxis>
+            <DxChartAxisRange StartValue="StartDate"
+                              EndValue="EndDate"/>
+        </DxChartArgumentAxis>
+        <DxChartZoomAndPanSettings ArgumentAxisZoomAndPanMode="ChartAxisZoomAndPanMode.Both"/>
+        <DxChartScrollBarSettings ArgumentAxisScrollBarVisible="true"
+                                  ArgumentAxisScrollBarPosition="ChartScrollBarPosition.Bottom"/>
+        <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
+            <div style="margin: 0.40rem">
+                <div class="font-weight-bold">
+                    @(((DateTime) context.Point.Argument).ToString("d"))
+                </div>
+                <div>
+                    @(context.Point.Value) case(s)
+                </div>
             </div>
-            <div>
-                @(context.Point.Value) case(s)
-            </div>
-        </div>
-    </DxChartTooltip>
-</DxChart>
+        </DxChartTooltip>
+    </DxChart></Card>
+<Card Class="mt-4 p-3">
+    <div class="text-center m-2">
+        <h4>
+            @L["ForecastAccuracy"]
+        </h4>
+    </div>
+    <div class="text-left">
+        <h5>@L["MAPE"] @(MAPE)% | @L["Accuracy"] = @(100-MAPE)%</h5>
+    </div>
+    <RadzenDataGrid AllowSorting="true" Data="@MonthlyCasesNoForecast" TItem="MonthlyCaseDto">
+        <Columns>
+            <RadzenDataGridColumn TItem="MonthlyCaseDto" Property="Month" Title="Date">
+                <Template Context="context">
+                    @context.GetDate().ToShortDateString()
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="MonthlyCaseDto" Property="Count" Title="Count">
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="MonthlyCaseDto" Property="SeasonalityTrend" Title="Forecast">
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="MonthlyCaseDto" Property="Error" Title="Error">
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="MonthlyCaseDto" Property="ErrorPercent" Title="Error %">
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</Card>
 
 @code {
-    
+
 }

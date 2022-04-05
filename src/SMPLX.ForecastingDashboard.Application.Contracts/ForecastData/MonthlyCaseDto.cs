@@ -28,6 +28,9 @@ namespace SMPLX.ForecastingDashboard.ForecastData
 
         public double LinearTrend { get; set; }
         public double SeasonalityTrend { get; set; }
+        
+        public double Error => Math.Round(SeasonalityTrend - Count,2);
+        public double ErrorPercent => Math.Round(Math.Abs(Error)/Count * 100,2);
 
         public DateTime GetDate() => new DateTime(Year, Month, 1);
 

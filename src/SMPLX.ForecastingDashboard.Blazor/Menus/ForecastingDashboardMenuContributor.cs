@@ -42,9 +42,19 @@ namespace SMPLX.ForecastingDashboard.Blazor.Menus
             context.Menu.Items.Insert(
                 1,
                 new ApplicationMenuItem(
-                    ForecastingDashboardMenus.Dashboard,
-                    l["Menu:Dashboard"],
-                    "/dashboard",
+                    ForecastingDashboardMenus.Heatmap,
+                    l["Menu:Heatmap"],
+                    "/heatmap",
+                    icon: "fas fa-map-marked-alt",
+                    order: 1
+                )
+            );
+            context.Menu.Items.Insert(
+                2,
+                new ApplicationMenuItem(
+                    ForecastingDashboardMenus.Analytics,
+                    l["Menu:Analytics"],
+                    "/analytics",
                     icon: "fas fa-chart-line",
                     order: 1
                 )
@@ -74,7 +84,7 @@ namespace SMPLX.ForecastingDashboard.Blazor.Menus
             }
 
             context.Menu.Items.Insert(
-                1, casesMenu
+                3, casesMenu
             );
 
             if (MultiTenancyConsts.IsEnabled)

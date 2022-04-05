@@ -15,6 +15,23 @@ public class AnalyticsViewModel : ForecastingDashboardComponentBase
     private IEnumerable<CaseDto> Cases { get; set; }
 
     protected IEnumerable<MonthlyCaseDto> MonthlyCases { get; private set; }
+    protected IEnumerable<MonthlyCaseDto> MonthlyCasesNoForecast
+    {
+        get
+        {
+            if (MonthlyCases == null) return new List<MonthlyCaseDto>();
+            return MonthlyCases.Where(c => !c.IsForecast && c.Count>0);
+        }
+    }
+
+    protected double MAPE
+    {
+        get
+        {
+            if (MonthlyCases == null || !MonthlyCases.Any()) return 0;
+            return Math.Round(MonthlyCasesNoForecast.Select(c => c.ErrorPercent).Average(),2);
+        }
+    }
 
     protected DateTime StartDate => MonthlyCases?.LastOrDefault().GetDate().AddYears(-2) ?? DateTime.Now.AddYears(-1);
 
@@ -89,9 +106,4 @@ public class CaseAnalyticsHelper
 
         return monthlyCases;
     }
-}
-
-public class CaseDataPoint : CaseDto
-{
-    public string Name { get; set; }
 }

@@ -5,6 +5,8 @@
         private const string Prefix = "ForecastingDashboard";
         public const string Home = Prefix + ".Home";
         public const string Dashboard = Prefix + ".Dashboard";
+        public const string Heatmap = Prefix + ".Heatmap";
+        public const string Analytics = Prefix + ".Dashboard";
 
         public static class Case
         {

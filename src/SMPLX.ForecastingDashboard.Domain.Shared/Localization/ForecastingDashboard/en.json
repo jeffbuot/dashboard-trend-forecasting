@@ -6,6 +6,8 @@
     "Menu:Cases.Query": "Query",
     "Menu:Cases.Import": "Data Import",
     "Menu:Dashboard": "Dashboard",
+    "Menu:Heatmap": "Heatmap",
+    "Menu:Analytics": "Analytics",
     "Permission:Case.Create": "Add a case",
     "Permission:Case.Edit": "Update a case",
     "Permission:Case.Delete": "Delete a case",
@@ -41,6 +43,9 @@
     "ConfirmDeleteCase":"Are you sure to delete case id '{0}'?",
     "RangeStepLabel":"Step:",
     "InvalidDateRange":"Invalid: start date should be less than end date.",
-    "FetchRangeDate":"Date range to filter:"
+    "FetchRangeDate":"Date range to filter:",
+    "Analytics": "Analytics",
+    "ForecastAccuracy": "Forecast Accuracy",
+    "MAPE":"MAPE (Mean Absolute Percent Error) = Average(Error%) = "
   }
 }
