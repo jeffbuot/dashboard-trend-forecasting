@@ -16,9 +16,9 @@
         <DateRangePicker @ref="HeatmapDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
     </Column>
 </Row>
-<RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading"
-                   Style="height: 10px;border-radius: 0;"
-                   Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+@* <RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading" *@
+@*                    Style="height: 10px;border-radius: 0;" *@
+@*                    Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/> *@
 
 <div id="hmap" style="height:650px;"></div>
 
