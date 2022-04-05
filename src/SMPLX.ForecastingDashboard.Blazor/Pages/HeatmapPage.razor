@@ -8,19 +8,26 @@
 @inject IJSRuntime Js
 @inject IOptions<GeologicalOptions> GeoOptions
 
-<Row class="mt-2">
-    <Column ColumnSize="ColumnSize.IsAuto">
-        <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
-    </Column>
-    <Column ColumnSize="ColumnSize.IsAuto">
-        <DateRangePicker @ref="HeatmapDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
-    </Column>
-</Row>
-@* <RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading" *@
-@*                    Style="height: 10px;border-radius: 0;" *@
-@*                    Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/> *@
+<Card class="p-3">
+    <div class="text-center">
+        <h4>
+            @L["Heatmap"]
+        </h4>
+    </div>
+    <Row class="mt-2">
+        <Column ColumnSize="ColumnSize.IsAuto">
+            <p class="mt-1 ml-1">@L["FetchRangeDate"]</p>
+        </Column>
+        <Column ColumnSize="ColumnSize.IsAuto">
+            <DateRangePicker @ref="HeatmapDateRangePicker" MinDate="OldestRecordDate" MaxDate="DateTimeOffset.Now" OnRangeSelect="OnHeatmapRangeSelect" Ranges="DateRanges"/>
+        </Column>
+    </Row>
+    @* <RadzenProgressBar class="mt-0 mb-0" Visible="@IsMapLoading" *@
+    @*                    Style="height: 10px;border-radius: 0;" *@
+    @*                    Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/> *@
 
-<div id="hmap" style="height:650px;"></div>
+    <div id="hmap" style="height:650px;"></div>
+</Card>
 
 @code {
 
@@ -34,7 +41,10 @@
         IsMapLoading = true;
         var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
         dr ??= new DateRange {End = DateTimeOffset.Now, Start = OldestRecordDate};
-        if (Cases == null || !Cases.Any()){ return;}
+        if (Cases == null || !Cases.Any())
+        {
+            return;
+        }
         var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
             .GroupBy(_ => _.Barangay)
             .Select(_ => new LocationCasesDto {Name = _.First().Barangay, Count = _.Count()}).ToList();
@@ -51,9 +61,10 @@
             await HandleErrorAsync(ex);
         }
     }
-    
+
     protected async Task OnHeatmapRangeSelect(DateRange dr)
     {
         await DrawHeatMap(dr);
     }
+
 }
