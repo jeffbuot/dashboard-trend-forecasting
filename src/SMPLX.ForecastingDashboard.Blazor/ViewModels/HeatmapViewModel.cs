@@ -43,6 +43,11 @@ public class HeatmapViewModel : ForecastingDashboardComponentBase
     {
         var res = await CaseAppService.GetListAsync(new CaseGetListDto());
         Cases = res.Items;
+        if (Cases.Any())
+        {
+            OldestRecordDate = Cases.OrderBy(c => c.DateRegistered).First().DateRegistered;
+        }
+
     }
 
     private string FlattenString(string s) => s.ToLower().Replace(" ", "");
