@@ -33,7 +33,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await DrawHeatMap();
+        if (firstRender)
+        {
+            await DrawHeatMap();
+        }
     }
 
     private async Task DrawHeatMap(DateRange dr = null)
