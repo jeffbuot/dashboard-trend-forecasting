@@ -1,4 +1,4 @@
-var map,legend,heatmapLayer,baseLayer;
+var map,legend,heatmapLayer,baseLayer,markers;
 window.initMap = (heatdata) => {
     if (!document.getElementById("hmap")) return;
     let mapData = {
@@ -24,6 +24,15 @@ window.initMap = (heatdata) => {
     // .setLatLng([ 6.961836,126.012958])
     // .setContent("POBLACION")
     // .openOn(map);
+    var marker = new L.marker([39.5, -77.3], { opacity: 0.01 }); //opacity may be set to zero
+    marker.bindTooltip("My Label", {permanent: true, className: "my-label", offset: [0, 0] });
+    marker.addTo(map);
+    
+    if (markers){
+        markers.forEach(m=>m.remove())
+    }
+    markers = [];
+    
     if (legend) {
         legend.remove();
     }
@@ -36,12 +45,16 @@ window.initMap = (heatdata) => {
         let ht = '<table>';
         heatdata.forEach(h => {
             total += h.count;
-            ht += '<tr><td>' + h.count + '</td><td>' + h.name + '</td></tr>';
+            ht += '<tr><td>' + h.count + '</td><td>' + h.name +'</td></tr>';
+            var m = new L.marker([h.lat, h.lng]).bindTooltip( h.name+' '+h.count+' case(s)', {permanent: false, className: "location-label", offset: [0, 0] });
+            markers.push(m);
+            m.addTo(map)
         });
         ht += '<tr><td>' + total + '</td><td>Total</td></tr></table>';
         div.innerHTML += ht;
         return div;
     }
+
     legend.addTo(map);
 
     if (heatmapLayer) {
