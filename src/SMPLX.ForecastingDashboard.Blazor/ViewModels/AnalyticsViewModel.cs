@@ -3,10 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Blazorise.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Extensions.Options;
 using SMPLX.ForecastingDashboard.Cases;
 using SMPLX.ForecastingDashboard.ForecastData;
 using SMPLX.ForecastingDashboard.Helpers;
+using SMPLX.ForecastingDashboard.Settings;
 
 namespace SMPLX.ForecastingDashboard.Blazor.ViewModels;
 
@@ -14,7 +17,7 @@ public class AnalyticsViewModel : ForecastingDashboardComponentBase
 {
     private IEnumerable<CaseDto> Cases { get; set; }
 
-    protected IEnumerable<MonthlyCaseDto> MonthlyCases { get; private set; }
+    protected IEnumerable<MonthlyCaseDto> MonthlyCases { get; set; }
     protected IEnumerable<MonthlyCaseDto> MonthlyCasesNoForecast
     {
         get
@@ -33,13 +36,32 @@ public class AnalyticsViewModel : ForecastingDashboardComponentBase
         }
     }
 
-    protected DateTime StartDate => MonthlyCases?.LastOrDefault().GetDate().AddYears(-2) ?? DateTime.Now.AddYears(-1);
+    private IOptions<GeologicalOptions> _geoOptions;
+    private IOptions<GeologicalOptions> GeoOptions=> LazyGetRequiredService(ref _geoOptions);
+    protected DateTime StartDate
+    {
+        get
+        {
+            if(MonthlyCases.IsNullOrEmpty())return DateTime.Now.AddYears(-1);
+            return MonthlyCases?.LastOrDefault().GetDate().AddYears(-2) ?? DateTime.Now.AddYears(-1);
+        }
+    }
 
-    protected DateTime EndDate => MonthlyCases?.LastOrDefault().GetDate() ?? DateTime.Now;
+    protected DateTime EndDate
+    {
+        get
+        {
+            if(MonthlyCases.IsNullOrEmpty())return DateTime.Now;
+            return MonthlyCases?.LastOrDefault().GetDate() ?? DateTime.Now;
+        }
+    }
+
     private ICaseAppService CaseAppService => LazyGetRequiredService(ref _caseAppService);
     
     private ICaseAppService _caseAppService;
-    
+
+    protected IReadOnlyList<String> Baranggays = new List<string>(){"All"};
+
     public AnalyticsViewModel()
     {
     }
@@ -53,6 +75,31 @@ public class AnalyticsViewModel : ForecastingDashboardComponentBase
         var res = await CaseAppService.GetListAsync(new CaseGetListDto());
         Cases = res.Items;
         MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases);
+        var b = Cases.Select(c=>c.Barangay).Distinct().OrderBy(_=>_).ToList();
+        b.AddFirst("All");
+        Baranggays = b;
+    }
+
+    protected void OnBaranggaySelect(object args, string dropdown)
+    {
+        var baranggay = (string) args;
+        if (baranggay.ToLower() != "all")
+        { 
+            MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases.Where(c => c.Barangay.ToLower() == baranggay.ToLower()));
+            // if (baranggay.ToLower() == "poblacion")
+            // {
+            //     MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases.Where(c => c.Barangay.ToLower().StartsWith(baranggay.ToLower())));
+            // }
+            // else
+            // {
+            //     MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases.Where(c => c.Barangay.ToLower() == baranggay.ToLower()));
+            // }
+        }
+        else
+        {
+            MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases);
+        }
+
     }
 }
 
@@ -60,6 +107,7 @@ public class CaseAnalyticsHelper
 {
     public static List<MonthlyCaseDto> GetMonthlyAccumulatedCases(IEnumerable<CaseDto> cases)
     {
+        if (cases.IsNullOrEmpty()) return new List<MonthlyCaseDto>();
         var monthlyCases = new List<MonthlyCaseDto>();
         var minDate = cases.Min(_ => _.DateRegistered);
         var maxDate = cases.Max(_ => _.DateRegistered);
