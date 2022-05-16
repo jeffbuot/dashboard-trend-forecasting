@@ -41,6 +41,7 @@ public class HeatmapViewModel : ForecastingDashboardComponentBase
 
     private async Task InitData()
     {
+        // Get list of cases from database
         var res = await CaseAppService.GetListAsync(new CaseGetListDto());
         Cases = res.Items;
         if (Cases.Any())

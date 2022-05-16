@@ -35,6 +35,7 @@
     {
         if (firstRender)
         {
+            // Refresh heatmap
             await DrawHeatMap();
         }
     }
@@ -42,12 +43,15 @@
     private async Task DrawHeatMap(DateRange dr = null)
     {
         IsMapLoading = true;
+        // Get the list of baranggay from appsettings.json
         var heatData = ObjectMapper.Map<List<Location>, List<HeatMapDto>>(GeoOptions.Value.Barangays);
         dr ??= new DateRange {End = DateTimeOffset.Now, Start = OldestRecordDate};
+        // If there are no cases return nothing
         if (Cases == null || !Cases.Any())
         {
             return;
         }
+        // Filter cases form date range and group by baranggay
         var cases = Cases.Where(_ => _.DateRegistered >= dr.Start && _.DateRegistered <= dr.End)
             .GroupBy(_ => _.Barangay)
             .Select(_ => new LocationCasesDto {Name = _.First().Barangay, Count = _.Count()}).ToList();
@@ -55,6 +59,7 @@
         heatData.ForEach(d => { d.Count = cases.Where(_ => FlatMatch(_.Name, d.Name)).Sum(_ => _.Count); });
         try
         {
+            // Invoke wwroot/js/main.js code to execute
             await Js.InvokeVoidAsync("initMap", heatData);
             IsMapLoading = false;
         }
@@ -67,6 +72,7 @@
 
     protected async Task OnHeatmapRangeSelect(DateRange dr)
     {
+        // Refresh heatmap every date range change
         await DrawHeatMap(dr);
     }
 

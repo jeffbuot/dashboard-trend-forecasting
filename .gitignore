@@ -263,3 +263,4 @@ src/SMPLX.ForecastingDashboard.Blazor.Tiered/Logs/*
 
 # Unsafe uploads
 unsafe_uploads/
+src/.vscode

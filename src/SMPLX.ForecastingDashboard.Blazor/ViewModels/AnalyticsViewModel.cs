@@ -72,9 +72,13 @@ public class AnalyticsViewModel : ForecastingDashboardComponentBase
 
     public async Task InitData()
     {
+        // Get the list of cases from database
         var res = await CaseAppService.GetListAsync(new CaseGetListDto());
         Cases = res.Items;
+        // Sum cases by monthly from CaseAnalyticsHelper
         MonthlyCases = CaseAnalyticsHelper.GetMonthlyAccumulatedCases(Cases);
+        
+        // Distinct cases and forecasting each baranggay
         var b = Cases.Select(c=>c.Barangay).Distinct().OrderBy(_=>_).ToList();
         b.AddFirst("All");
         Baranggays = b;
@@ -120,18 +124,23 @@ public class CaseAnalyticsHelper
             monthlyCases.Add(new MonthlyCaseDto(mc++, i.Year, i.Month, Convert.ToDouble(a)));
         }
         
-        //Get the intercept
         var monthlyCasesCounts = monthlyCases.Select(_ => _.Count).ToArray();
+        //Get the monthly periods
         var monthlyPeriods = monthlyCases.Select(_ => _.Period).ToArray();
+        //Get the intercept
         var intercept = MathUtil.Intercept(monthlyCasesCounts, monthlyPeriods);
+        //Get the slope
         var slope = MathUtil.Slope(monthlyCasesCounts, monthlyPeriods);
+        //Get the seasonality index
         var sindex = Enumerable.Range(1, 12).ToDictionary(x => x,
             x => monthlyCases.Where(m => m.Month == x).Select(_ => _.Count).Average() /
                  monthlyCasesCounts.Average());
 
         foreach (var item in monthlyCases)
         {
+            // Get the linear trend
             item.LinearTrend = (intercept + slope * item.Period).RoundOff(2);
+            // Get the seasonality
             item.SeasonalityTrend = sindex[item.Month] * item.LinearTrend;
         }
 

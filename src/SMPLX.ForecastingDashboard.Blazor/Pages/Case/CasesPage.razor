@@ -5,36 +5,46 @@
 @using SMPLX.ForecastingDashboard.Settings
 @using Volo.Abp
 @using Microsoft.Extensions.Options
+@using DevExpress.Data.Filtering
+@using DevExpress.Blazor.Internal
 @inherits ForecastingDashboardComponentBase
 @inject NavigationManager NavigationManager
 @inject ICaseAppService CaseAppService
 @inject IOptions<GeologicalOptions> GeoOptions
 
 <Card>
-    <CardHeader>
-        <div class="d-flex">
-            <div class="mr-auto p-2">
-                <h2>@L["CasesRecord"]</h2>
-            </div>
+<CardHeader>
+    <div class="d-flex">
+        <div class="mr-auto p-2">
+            <h2>@L["CasesRecord"]</h2>
+        </div>
+        <div class="p-2">
+            <DxCheckBox @bind-Checked="@IsEditMode">
+                @L["EditMode"]
+            </DxCheckBox>
+        </div>
 
-
+        <div class="p-2">
+            <Button Color="Color.Primary" Clicked="@RefreshGrid" Disabled="@IsGridLoading">
+                <i class="fas fa-sync-alt"></i> @L["Refresh"]
+            </Button>
+        </div>
+        @if (HasCreatePermission)
+        {
             <div class="p-2">
-                <Button Color="Color.Primary" Clicked="@RefreshGrid" Disabled="@IsGridLoading">
-                    <i class="fas fa-sync-alt"></i> @L["Refresh"]
+                <Button Color="Color.Primary" Clicked="@ExcelImport">
+                    <i class="fas fa-file-upload"></i> @L["ExcelImport"]
                 </Button>
             </div>
-            @if (HasCreatePermission)
+            @if (IsEditMode)
             {
-                <div class="p-2">
-                    <Button Color="Color.Primary" Clicked="@ExcelImport">
-                        <i class="fas fa-file-upload"></i> @L["ExcelImport"]
-                    </Button>
-                </div>
                 <div class="p-2">
                     <Button Color="Color.Primary" Clicked="@InsertRow">
                         <i class="fas fa-plus-square"></i> @L["InsertNew"]
                     </Button>
                 </div>
+            }
+
                 @* <div class="p-2"> 
                     @* <Button Color="Color.Primary" Clicked="@SaveChanges" Disabled="@IsSaving"> *@
                     @*     @if (IsSaving) *@
@@ -48,13 +58,14 @@
                     @*     } *@
                     @* </Button> *@
                 @* </div>*@
-            }
-        </div>
-    </CardHeader>
-    <CardBody>
-
-        <RadzenProgressBar class="mt-2 mb-2" Visible="@IsGridLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
-        <RadzenDataGrid @ref="CasesGrid" AllowFiltering="true" AllowPaging="true" PageSize="17" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
+        }
+    </div>
+</CardHeader>
+<CardBody>
+    <RadzenProgressBar class="mt-2 mb-2" Visible="@IsGridLoading" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    @if (IsEditMode)
+    {
+        <RadzenDataGrid @ref="CasesGrid" AllowFiltering="false" AllowPaging="true" PageSize="10" AllowSorting="true" EditMode="Radzen.DataGridEditMode.Single"
                         Data="@CasesDtoList" TItem="CaseImportDto" RowUpdate="@OnUpdateRow" RowCreate="@OnCreateRow">
             <Columns>
                 <RadzenDataGridColumn TItem="CaseImportDto" Property="CaseId" Title="Case ID">
@@ -92,7 +103,7 @@
                         @Enum.GetName(context.Gender)
                     </Template>
                     <EditTemplate Context="context">
-                        <RadzenDropDown @bind-Value="context.Gender" Data="@genderEnumerable" ValueProperty="Gender" Style="width:100%">
+                        <RadzenDropDown @bind-Value="context.Gender" Data="@genderList" ValueProperty="Gender" Style="width:100%">
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -106,17 +117,17 @@
                         @Enum.GetName(context.LifeStatus)
                     </Template>
                     <EditTemplate Context="context">
-                        <RadzenDropDown @bind-Value="context.LifeStatus" Data="@lifeStatusEnumerable" ValueProperty="LifeStatus" Style="width:100%">
+                        <RadzenDropDown @bind-Value="context.LifeStatus" Data="@lifeStatusList" ValueProperty="LifeStatus" Style="width:100%">
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                
+
                 <RadzenDataGridColumn Width="140px" TItem="CaseImportDto" Property="Wellness" Title="Wellness">
                     <Template Context="context">
                         @Enum.GetName(context.Wellness)
                     </Template>
                     <EditTemplate Context="context">
-                        <RadzenDropDown @bind-Value="context.Wellness" Data="@wellnessEnumerable" ValueProperty="Wellness" Style="width:100%">
+                        <RadzenDropDown @bind-Value="context.Wellness" Data="@wellnessList" ValueProperty="Wellness" Style="width:100%">
                         </RadzenDropDown>
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -151,7 +162,83 @@
 
             </Columns>
         </RadzenDataGrid>
-    </CardBody>
+    }
+    else
+    {
+        <DxGrid
+            Data="@CasesDtoList"
+            ShowGroupPanel="true"
+            ShowFilterRow="true"
+            PagerNavigationMode="PagerNavigationMode.InputBox"
+            PageSizeSelectorVisible="true"
+            PageSizeSelectorAllRowsItemVisible="true"
+            PageSizeSelectorItems="@(new int[] {10, 20, 30})">
+            <Columns>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.CaseId)" MinWidth="80">
+                    <FilterRowCellTemplate>
+                        <DxSpinEdit Value="(int?) context.FilterRowValue"
+                                    ValueChanged="(int? v) => context.FilterRowValue = v"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.DateRegistered)" Caption="Date Registered" MinWidth="100">
+                    <FilterRowCellTemplate>
+                        <DxDateEdit Date="(DateTime?) context.FilterRowValue"
+                                    DateChanged="(DateTime? v) => context.FilterRowValue = v"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Never"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.Age)" MinWidth="80">
+                    <FilterRowCellTemplate>
+                        <DxComboBox @bind-Value="context.FilterCriteria"
+                                    Data="AgeFilterIntervals" ValueFieldName="Criteria" TextFieldName="DisplayText"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.Gender)" MinWidth="80">
+                    <FilterRowCellTemplate Context="filterContext">
+                        @{
+                            Gender? genderVal = (Gender?) filterContext.FilterRowValue;
+                        }
+                        <DxComboBox Value="genderVal"
+                                    TData="Gender?"
+                                    TValue="Gender?"
+                                    Data="genderList"
+                                    ValueChanged="gender => filterContext.FilterRowValue = gender"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.Barangay)" FilterRowOperatorType="GridFilterRowOperatorType.Contains" MinWidth="80"/>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.LifeStatus)" MinWidth="80">
+                    <FilterRowCellTemplate Context="filterContext">
+                        @{
+                            LifeStatus? lifeStatusVal = (LifeStatus?) filterContext.FilterRowValue;
+                        }
+                        <DxComboBox Value="lifeStatusVal"
+                                    TData="LifeStatus?"
+                                    TValue="LifeStatus?"
+                                    Data="lifeStatusList"
+                                    ValueChanged="lifeStatus => filterContext.FilterRowValue = lifeStatus"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+                <DxGridDataColumn FieldName="@nameof(CaseDto.Wellness)" MinWidth="80">
+                    <FilterRowCellTemplate Context="filterContext">
+                        @{
+                            Wellness? wellnessVal = (Wellness?) filterContext.FilterRowValue;
+                        }
+                        <DxComboBox Value="wellnessVal"
+                                    TData="Wellness?"
+                                    TValue="Wellness?"
+                                    Data="wellnessList"
+                                    ValueChanged="wellness => filterContext.FilterRowValue = wellness"
+                                    ClearButtonDisplayMode="DataEditorClearButtonDisplayMode.Auto"/>
+                    </FilterRowCellTemplate>
+                </DxGridDataColumn>
+            </Columns>
+        </DxGrid>
+    }
+</CardBody>
 </Card>
 
 @code {
@@ -159,14 +246,30 @@
     bool HasCreatePermission;
     bool HasDeletePermission;
     bool HasUpdatePermission;
+    bool IsEditMode = false;
     RadzenDataGrid<CaseImportDto> CasesGrid;
-    IEnumerable<Gender> genderEnumerable = Enum.GetValues(typeof(Gender)).Cast<Gender>();
-    IEnumerable<LifeStatus> lifeStatusEnumerable = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus>();
-    IEnumerable<Wellness> wellnessEnumerable = Enum.GetValues(typeof(Wellness)).Cast<Wellness>();
+    IEnumerable<Gender?> genderList = Enum.GetValues(typeof(Gender)).Cast<Gender?>();
+    IEnumerable<LifeStatus?> lifeStatusList = Enum.GetValues(typeof(LifeStatus)).Cast<LifeStatus?>();
+    IEnumerable<Wellness?> wellnessList = Enum.GetValues(typeof(Wellness)).Cast<Wellness?>();
     List<CaseImportDto> CasesDtoList;
     List<Location> SuggestedBarangays;
     List<Location> StaticSuggestedBarangays;
+    List<string> SuggestedBaranggayFilter = new List<string>();
 
+    static readonly IReadOnlyList<AgeFilterInterval> AgeFilterIntervals = new AgeFilterInterval[]
+    {
+        new("[Age] < 18", "< 18"),
+        new("[Age] between (18, 30)", "18 to 30"),
+        new("[Age] > 30", "> 30")
+    };
+
+    record AgeFilterInterval(CriteriaOperator Criteria, string DisplayText)
+    {
+        public AgeFilterInterval(string CriteriaText, string DisplayText)
+            : this(CriteriaOperator.Parse(CriteriaText), DisplayText)
+        {
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -189,6 +292,7 @@
         var list = await CaseAppService.GetListAsync(new CaseGetListDto());
         CasesDtoList = new List<CaseImportDto>(ObjectMapper.Map<IReadOnlyList<CaseDto>, IReadOnlyList<CaseImportDto>>(list.Items));
         IsGridLoading = false;
+        SuggestedBaranggayFilter = CasesDtoList.Select(_ => _.Barangay).Distinct().ToList();
     }
 
     private async Task RefreshGrid()
@@ -286,10 +390,10 @@
 
     private async Task DeleteRow(CaseImportDto caseDto)
     {
-       var result = await Message.Confirm(L["ConfirmDeleteCase", caseDto.CaseId]);
+        var result = await Message.Confirm(L["ConfirmDeleteCase", caseDto.CaseId]);
         if (!result) return;
-        
-        if (caseDto.Id!=Guid.Empty)
+
+        if (caseDto.Id != Guid.Empty)
         {
             try
             {
